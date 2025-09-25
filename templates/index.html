@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda Flask - Mejorada</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fa-solid fa-store"></i> Tienda Online</h1>
+            <a href="/carrito" class="btn-carrito">
+                <i class="fa-solid fa-cart-shopping"></i> Ver Carrito 
+                {% set carrito = session.get('carrito', []) %}
+                {% set total_cantidad = 0 %}
+                {% for item in carrito %}
+                    {% set total_cantidad = total_cantidad + item.cantidad %}
+                {% endfor %}
+                ({{ total_cantidad }})
+            </a>
+        </header>
+        
+        <hr>
+
+        <h2>Nuestros Productos</h2>
+        <div class="productos-container">
+            {% for p in productos %}
+                <div class="producto-card">
+                    <img src="{{ p.imagen }}" alt="Imagen de {{ p.nombre }}" class="producto-img">
+                    <div class="producto-info">
+                        <h3>{{ p.nombre }}</h3>
+                        <p class="precio">${{ "%.2f"|format(p.precio) }}</p>
+                        <a href="/agregar/{{ p.id }}" class="btn-agregar">
+                            <i class="fa-solid fa-cart-plus"></i> Agregar al carrito
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
