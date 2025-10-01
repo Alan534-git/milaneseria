@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, session
+from flask import Flask, render_template, redirect, url_for, session, jsonify
 
 app = Flask(__name__)
 app.secret_key = "clave-secreta"  # Necesario para manejar sesiones
@@ -13,16 +13,17 @@ productos = [
 
 @app.route("/")
 def index():
-    """Renderiza la página principal de la tienda."""
-    return render_template("index.html", productos=productos)
+    """Renderiza la página principal de la tienda y pasa la cantidad total del carrito."""
+    carrito = session.get('carrito', [])
+    total_cantidad = sum(item.get('cantidad', 0) for item in carrito)
+    return render_template("index.html", productos=productos, total_cantidad=total_cantidad)
 
 @app.route("/agregar/<int:id>")
 def agregar(id):
-    """Agrega o incrementa la cantidad de un producto en el carrito de compras."""
+    """Agrega o incrementa la cantidad de un producto en el carrito (fallback sin JS)."""
     if "carrito" not in session:
         session["carrito"] = []
     
-    # Buscar producto y agregarlo o actualizar cantidad
     producto = next((p for p in productos if p["id"] == id), None)
     if producto:
         item_existente = next((item for item in session["carrito"] if item["id"] == id), None)
@@ -35,6 +36,27 @@ def agregar(id):
         session.modified = True
 
     return redirect(url_for("index"))
+
+@app.route("/api/agregar/<int:id>", methods=['POST'])
+def api_agregar(id):
+    """Endpoint de API para agregar un producto y devolver la nueva cantidad total."""
+    if "carrito" not in session:
+        session["carrito"] = []
+    
+    producto = next((p for p in productos if p["id"] == id), None)
+    if producto:
+        item_existente = next((item for item in session["carrito"] if item["id"] == id), None)
+        if item_existente:
+            item_existente["cantidad"] += 1
+        else:
+            nuevo_item = producto.copy()
+            nuevo_item["cantidad"] = 1
+            session["carrito"].append(nuevo_item)
+        session.modified = True
+    
+    total_cantidad = sum(item.get('cantidad', 0) for item in session.get("carrito", []))
+    return jsonify({'total_cantidad': total_cantidad})
+
 
 @app.route("/eliminar/<int:id>")
 def eliminar(id):
@@ -60,7 +82,6 @@ def cambiar_cantidad(id, cantidad):
 def carrito():
     """Muestra el contenido del carrito de compras."""
     carrito = session.get("carrito", [])
-    # Es crucial que total sea 0 si el carrito está vacío para evitar errores
     total = sum(p["precio"] * p["cantidad"] for p in carrito) if carrito else 0
     return render_template("carrito.html", carrito=carrito, total=total)
 

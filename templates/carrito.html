@@ -4,16 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carrito de Compras</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Se eliminaron las librerías externas de fuentes e íconos -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/carrito.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><i class="fa-solid fa-basket-shopping"></i> Tu Carrito de Compras</h1>
+            <h1>🛒 Tu Carrito de Compras</h1>
         </header>
 
         <div class="acciones-top">
@@ -31,18 +28,18 @@
                             <img src="{{ item.imagen }}" alt="{{ item.nombre }}" class="item-img">
                             <span class="item-nombre">{{ item.nombre }}</span>
                             <div class="cantidad-container">
-                                <a href="/cambiar_cantidad/{{ item.id }}/{{ item.cantidad - 1 }}" class="btn-cantidad"><i class="fa-solid fa-minus"></i></a>
+                                <a href="/cambiar_cantidad/{{ item.id }}/{{ item.cantidad - 1 }}" class="btn-cantidad">-</a>
                                 <span class="cantidad-actual">{{ item.cantidad }}</span>
-                                <a href="/cambiar_cantidad/{{ item.id }}/{{ item.cantidad + 1 }}" class="btn-cantidad"><i class="fa-solid fa-plus"></i></a>
+                                <a href="/cambiar_cantidad/{{ item.id }}/{{ item.cantidad + 1 }}" class="btn-cantidad">+</a>
                             </div>
                             <span class="item-precio">${{ "%.2f"|format(item.precio * item.cantidad) }}</span>
-                            <a href="/eliminar/{{ item.id }}" class="btn-eliminar"><i class="fa-solid fa-trash-can"></i></a>
+                            <a href="/eliminar/{{ item.id }}" class="btn-eliminar">🗑️</a>
                         </li>
                     {% endfor %}
                 </ul>
                 <div class="total-container">
                     <h3>Total: <span class="total-precio">${{ "%.2f"|format(total) }}</span></h3>
-                    <button class="btn-pagar"><i class="fa-solid fa-cash-register"></i> Proceder al Pago</button>
+                    <button class="btn-pagar">💳 Proceder al Pago</button>
                 </div>
             {% else %}
                 <p class="carrito-vacio">El carrito está vacío. ¡Añade algunos productos!</p>

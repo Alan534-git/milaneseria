@@ -3,25 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tienda Flask - Mejorada</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Tienda - Dinámica</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><i class="fa-solid fa-store"></i> Tienda Online</h1>
+            <h1>🏪 Tienda Online</h1>
             <a href="/carrito" class="btn-carrito">
-                <i class="fa-solid fa-cart-shopping"></i> Ver Carrito 
-                {% set carrito = session.get('carrito', []) %}
-                {% set total_cantidad = 0 %}
-                {% for item in carrito %}
-                    {% set total_cantidad = total_cantidad + item.cantidad %}
-                {% endfor %}
-                ({{ total_cantidad }})
+                🛒 Ver Carrito (<span id="cart-count">{{ total_cantidad }}</span>)
             </a>
         </header>
         
@@ -35,13 +25,58 @@
                     <div class="producto-info">
                         <h3>{{ p.nombre }}</h3>
                         <p class="precio">${{ "%.2f"|format(p.precio) }}</p>
-                        <a href="/agregar/{{ p.id }}" class="btn-agregar">
-                            <i class="fa-solid fa-cart-plus"></i> Agregar al carrito
+                        <a href="/agregar/{{ p.id }}" class="btn-agregar" data-product-id="{{ p.id }}">
+                            ➕ Agregar al carrito
                         </a>
                     </div>
                 </div>
             {% endfor %}
         </div>
     </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Selecciona todos los botones de "Agregar al carrito"
+        const agregarBotones = document.querySelectorAll('.btn-agregar');
+        // Selecciona el span donde se muestra el número de productos
+        const cartCountSpan = document.getElementById('cart-count');
+
+        agregarBotones.forEach(button => {
+            button.addEventListener('click', function(event) {
+                // Previene el comportamiento por defecto del enlace (navegar a otra página)
+                event.preventDefault(); 
+                
+                const productId = this.dataset.productId;
+                // La URL del nuevo endpoint de la API
+                const url = `/api/agregar/${productId}`;
+
+                // Usa la API Fetch para enviar una solicitud POST al servidor
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('La respuesta de la red no fue correcta');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Revisa si la respuesta contiene la cantidad total
+                    if (data.total_cantidad !== undefined) {
+                        // Actualiza el número en el botón del carrito
+                        cartCountSpan.textContent = data.total_cantidad;
+                    }
+                })
+                .catch(error => {
+                    console.error('Hubo un problema con la operación de fetch:', error);
+                });
+            });
+        });
+    });
+    </script>
 </body>
 </html>
+

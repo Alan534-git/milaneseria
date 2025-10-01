@@ -1,6 +1,6 @@
 /* Estilos Generales */
 body {
-    font-family: 'Poppins', sans-serif;
+    font-family: Arial, Helvetica, sans-serif; /* Fuente estándar */
     margin: 0;
     background-color: #f0f2f5;
     color: #333;
