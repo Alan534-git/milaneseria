@@ -1,107 +1,238 @@
 /* ---------------------------------- */
-/* VARIABLES CSS             */
+/* VARIABLES CSS MODERNAS */
 /* ---------------------------------- */
 :root {
     /* Modo Claro */
-    --color-bg-body: #f0f2f5;
-    --color-bg-container: #ffffff;
-    --color-text-primary: #333;
-    --color-text-secondary: #555;
-    --color-border: #e0e0e0;
-    --color-shadow: rgba(0, 0, 0, 0.1);
-    --color-card-bg: #fff;
-    --color-card-shadow: rgba(0, 0, 0, 0.1);
-    --color-accent-dark: #31343C; /* Color para h1 */
-    --color-accent-main: #A67B5B; /* Color principal de botones (Marrón cálido) */
-    --color-dark-mode-icon: #31343C; /* Ícono de sol */
+    --color-bg-body: #f9fafb; /* Fondo muy claro */
+    --color-bg-container: #ffffff; /* Fondo blanco para tarjetas y secciones */
+    --color-text-primary: #1f2937; /* Texto principal (Gris muy oscuro) */
+    --color-text-secondary: #4b5563; /* Texto secundario (Gris medio) */
+    --color-border: #e5e7eb; /* Borde sutil */
+    --color-shadow: rgba(0, 0, 0, 0.08); /* Sombra suave */
+    
+    --color-accent-main: #d6451e; /* Color principal de marca (Terracota / Rojo oscuro) */
+    --color-accent-hover: #b43a18; /* Hover de acento */
+    --color-accent-secondary: #1e3a47; /* Azul Pizarra para títulos/destacados */
+    
+    /* Botones y Elementos Interactivos */
+    --color-btn-default-bg: #6b7280; /* Gris para botones neutrales */
+    --color-btn-default-hover: #4b5563; 
+    
+    /* Íconos */
+    --color-dark-mode-icon: var(--color-accent-secondary); /* Icono de sol/luna */
 }
 
 /* ---------------------------------- */
-/* MODO OSCURO               */
+/* MODO OSCURO */
 /* ---------------------------------- */
 body.dark-mode {
-    --color-bg-body: #121212;
-    --color-bg-container: #1e1e1e;
-    --color-text-primary: #e0e0e0;
-    --color-text-secondary: #aaaaaa;
-    --color-border: #333333;
-    --color-shadow: rgba(255, 255, 255, 0.05);
-    --color-card-bg: #2a2a2a;
-    --color-card-shadow: rgba(0, 0, 0, 0.5);
-    --color-accent-dark: #f0f0f0;
-    --color-dark-mode-icon: #fdd835; /* Ícono de luna amarillo */
+    --color-bg-body: #1f2937; /* Fondo oscuro */
+    --color-bg-container: #374151; /* Fondo de tarjeta más claro */
+    --color-text-primary: #f3f4f6; /* Texto principal (Gris muy claro) */
+    --color-text-secondary: #d1d5db; /* Texto secundario */
+    --color-border: #4b5563; /* Borde oscuro */
+    --color-shadow: rgba(0, 0, 0, 0.4); /* Sombra fuerte en oscuro */
+
+    --color-accent-main: #f59e0b; /* Acento más brillante en oscuro (Ámbar) */
+    --color-accent-hover: #d97706; 
+    --color-accent-secondary: #e0e0e0;
+    
+    --color-btn-default-bg: #4b5563;
+    --color-btn-default-hover: #6b7280;
+    
+    --color-dark-mode-icon: var(--color-accent-main);
 }
 
 
 /* ---------------------------------- */
-/* ESTILOS GLOBALES          */
+/* ESTILOS BASE */
 /* ---------------------------------- */
+* {
+    box-sizing: border-box;
+}
+
 body {
-    font-family: Arial, Helvetica, sans-serif;
-    margin: 0;
+    font-family: 'Inter', 'Roboto', 'Helvetica Neue', Arial, sans-serif; /* Fuente moderna */
     background-color: var(--color-bg-body);
     color: var(--color-text-primary);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
     transition: background-color 0.3s, color 0.3s;
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1200px; /* Hacemos el contenedor un poco más ancho */
     margin: 0 auto;
     padding: 20px;
-    background-color: var(--color-bg-container);
-    border-radius: 16px;
-    box-shadow: 0 10px 30px var(--color-shadow);
 }
 
+/* Encabezados */
 h1, h2 {
-    color: var(--color-accent-dark);
+    color: var(--color-accent-secondary);
+    margin-top: 0;
+    font-weight: 700;
+}
+
+h1 {
+    font-size: 2.5rem;
+}
+
+h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
 }
 
 /* ---------------------------------- */
-/* BOTÓN TEMA CLARO/OSCURO   */
+/* HEADER GLOBAL Y NAVEGACIÓN */
 /* ---------------------------------- */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Botón de tema */
 .theme-switch-container {
     display: flex;
     align-items: center;
-    position: relative; /* Para posicionar el botón de forma absoluta si es necesario en el header */
 }
 
 #theme-toggle {
     background: none;
-    border: none;
+    border: 2px solid var(--color-dark-mode-icon); /* Borde visible */
     cursor: pointer;
-    font-size: 1.5rem; /* Ajuste el tamaño del ícono */
-    padding: 10px;
+    font-size: 1.2rem;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    transition: background-color 0.3s, transform 0.2s;
-    line-height: 1; /* Asegura que el ícono esté centrado */
-    color: var(--color-dark-mode-icon); /* Usa el color de la variable */
+    transition: background-color 0.3s, transform 0.2s, border-color 0.3s;
+    line-height: 1;
+    color: var(--color-dark-mode-icon);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #theme-toggle:hover {
     background-color: var(--color-border);
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
 /* Estilo para el ícono de sol/luna */
 #theme-toggle .fa-sun,
 #theme-toggle .fa-moon {
-    pointer-events: none; /* Asegura que el click se registre en el botón */
+    pointer-events: none;
+    position: absolute;
+    transition: opacity 0.3s;
 }
 
 /* Ocultar el sol en dark-mode y la luna en light-mode */
-body:not(.dark-mode) #theme-toggle .fa-moon {
-    display: none;
-}
-body.dark-mode #theme-toggle .fa-sun {
-    display: none;
-}
-body:not(.dark-mode) #theme-toggle .fa-sun {
-    display: block;
-}
-body.dark-mode #theme-toggle .fa-moon {
-    display: block;
+body.dark-mode .fa-sun {
+    opacity: 0;
 }
 
-/* Añade las utilidades para los iconos de Font Awesome */
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css');
+body:not(.dark-mode) .fa-moon {
+    opacity: 0;
+}
+
+
+/* Botón de Carrito (en index.html) */
+.btn-carrito {
+    text-decoration: none;
+    padding: 10px 18px;
+    background-color: var(--color-accent-main);
+    color: white;
+    border-radius: 6px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s, transform 0.1s;
+    box-shadow: 0 4px 6px -1px var(--color-shadow);
+}
+
+.btn-carrito:hover {
+    background-color: var(--color-accent-hover);
+    transform: translateY(-1px);
+}
+
+#cart-count {
+    background-color: rgba(255, 255, 255, 0.3);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.9em;
+    font-weight: 700;
+}
+
+
+/* Estilo de la línea horizontal */
+hr {
+    border: none;
+    border-top: 1px solid var(--color-border);
+    margin: 20px 0;
+}
+
+
+/* ---------------------------------- */
+/* BOTONES DE ACCIÓN NEUTRAL (carrito.html) */
+/* ---------------------------------- */
+.btn-accion {
+    text-decoration: none;
+    padding: 10px 18px;
+    background-color: var(--color-btn-default-bg); /* Gris neutro */
+    color: white;
+    border-radius: 6px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+.btn-accion:hover {
+    background-color: var(--color-btn-default-hover);
+    transform: translateY(-1px);
+}
+
+.btn-vaciar {
+    background-color: #dc3545; /* Rojo peligro */
+}
+
+.btn-vaciar:hover {
+    background-color: #c82333;
+}
+
+/* ---------------------------------- */
+/* RESPONSIVIDAD BÁSICA */
+/* ---------------------------------- */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2rem;
+    }
+    h2 {
+        font-size: 1.5rem;
+    }
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .header-right {
+        margin-top: 10px;
+        width: 100%;
+        justify-content: space-between;
+    }
+    .btn-carrito {
+        flex-grow: 1;
+        justify-content: center;
+    }
+}

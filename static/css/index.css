@@ -1,184 +1,159 @@
-/* Este archivo usa las variables definidas en style.css */
+/* --- index.css: Estilos específicos para la página principal (index.html) --- */
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-/* Encabezado */
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding: 15px 0;
-    border-bottom: 2px solid var(--color-border); /* Usa variable */
-}
-
-header h1 {
-    color: var(--color-accent-dark); /* Usa variable */
-    margin: 0;
-    font-size: 2.5rem;
-    font-weight: 700;
-}
-
-/* Contenedor del Carrito y Dark Mode */
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-/* --- ESTILOS DE BOTÓN CARRITO --- */
-.btn-carrito {
-    background-color: var(--color-accent-main); /* Usa variable */
-    color: white;
-    padding: 12px 24px;
-    text-decoration: none;
-    border-radius: 10px;
-    font-weight: 600;
-    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 15px var(--color-shadow);
-}
-
-.btn-carrito:hover {
-    background-color: #92694E; /* Un tono más oscuro del marrón */
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px var(--color-shadow);
-}
-
-.btn-carrito #cart-count {
-    display: inline-block;
-    min-width: 20px;
-    text-align: center;
-    background-color: #ffc107; /* Amarillo para el contador */
-    color: #333;
-    border-radius: 50%;
-    padding: 2px 5px;
-    margin-left: 5px;
-    font-size: 0.8rem;
-    font-weight: bold;
-}
-/* --- FIN: ESTILOS DE BOTÓN CARRITO --- */
-
-/* Contenedor de Productos */
-h2 {
-    text-align: center;
-    margin-top: 30px;
-    margin-bottom: 30px;
-    font-size: 2rem;
-}
-
+/* Contenedor de productos */
 .productos-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    padding-bottom: 50px;
+    /* Usar un patrón más moderno: 1 columna en móvil, 2 en tablet, 3 en desktop */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+    gap: 30px; /* Mayor espaciado */
+    padding: 20px 0;
 }
 
-/* Tarjeta de Producto */
+/* Tarjeta de producto */
 .producto-card {
-    background-color: var(--color-card-bg); /* Usa variable */
-    border-radius: 16px;
-    box-shadow: 0 8px 25px var(--color-card-shadow); /* Usa variable */
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s;
+    background-color: var(--color-bg-container);
+    border: 1px solid var(--color-border);
+    border-radius: 12px; /* Más redondeado */
+    padding: 25px; /* Más padding */
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    position: relative; /* Para el badge */
+    box-shadow: 0 4px 10px var(--color-shadow);
 }
 
 .producto-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 12px 30px var(--color-card-shadow);
+    transform: translateY(-8px); /* Elevación más notable */
+    box-shadow: 0 15px 30px var(--color-shadow); /* Sombra más pronunciada */
 }
 
-.producto-img {
+.producto-imagen {
     width: 100%;
-    height: 200px;
+    max-width: 200px; /* Reducir un poco la imagen para dejar espacio */
+    height: auto;
+    border-radius: 8px; /* Redondeado en la imagen */
+    margin-bottom: 20px;
     object-fit: cover;
-    border-radius: 16px 16px 0 0;
-}
-
-.producto-info {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .producto-info h3 {
-    margin: 0 0 10px 0;
-    font-size: 1.4rem;
-    color: var(--color-text-primary); /* Usa variable */
-}
-
-/* --- SECCIÓN DE PRECIO Y REFRESCAS (NUEVO) --- */
-.precio-refrescos-container {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 15px;
-}
-
-.precio-main {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #28a745; /* Verde para el precio */
+    font-size: 1.6rem;
+    color: var(--color-accent-secondary);
     margin-bottom: 10px;
+    font-weight: 600;
 }
 
-.refrescos-selector {
+.precio-base {
+    font-size: 1.2rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.precio-base span {
+    font-weight: 700;
+    color: var(--color-accent-main);
+    font-size: 1.3em;
+}
+
+/* Sección de Refrescos */
+.refrescos-opciones {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed var(--color-border); /* Línea de división estilizada */
+    width: 100%;
+    text-align: left;
+}
+
+.refrescos-opciones p {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.refresco-botones {
     display: flex;
-    gap: 5px;
-    margin-top: 5px;
+    flex-wrap: wrap; /* Permitir que los botones se envuelvan */
+    justify-content: center;
+    gap: 8px; /* Espacio entre botones */
+    margin-bottom: 20px;
 }
 
 .btn-refresco {
-    /* Estilo del botón de refresco */
-    background-color: var(--color-border);
-    border: 2px solid var(--color-border);
-    color: var(--color-text-primary);
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
+    background-color: var(--color-bg-body); /* Fondo claro para los botones */
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    padding: 6px 10px;
+    border-radius: 20px; /* Botón tipo "píldora" (pill-shaped) */
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+    font-size: 0.85rem;
+    font-weight: 500;
+    position: relative;
     display: flex;
     align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    position: relative; /* Para el tooltip */
-    font-size: 1.1rem;
+    gap: 5px;
 }
 
 .btn-refresco:hover {
-    border-color: var(--color-accent-main);
+    background-color: var(--color-border);
 }
 
 .btn-refresco.selected {
-    /* Estilo cuando está seleccionado */
-    background-color: #ffc107; /* Amarillo */
-    border-color: #ffc107;
-    box-shadow: 0 0 8px rgba(255, 193, 7, 0.5);
-    transform: scale(1.05);
+    background-color: var(--color-accent-main);
+    border-color: var(--color-accent-main);
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(214, 69, 30, 0.4); /* Sombra de color */
 }
 
-/* Tooltip (Nuevo) */
+.btn-refresco.selected:hover {
+    background-color: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+}
+
+.btn-refresco img {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 3px;
+    object-fit: cover;
+}
+
+/* Icono de "Sin Refresco" - se le da el mismo estilo visual que a los íconos de bebida */
+.btn-refresco .fa-times {
+    font-size: 1.2em;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+}
+
+/* Tooltip para los botones de refresco (ajustamos el color para que funcione con el nuevo tema) */
 .tooltip-refresco {
     visibility: hidden;
-    background-color: #333;
-    color: #fff;
+    background-color: var(--color-text-primary); 
+    color: var(--color-bg-body);
     text-align: center;
     border-radius: 6px;
-    padding: 5px 10px;
+    padding: 5px 8px;
     position: absolute;
-    z-index: 1;
-    bottom: 125%; /* Posiciona encima del botón */
+    z-index: 10; /* Asegurar que esté encima de todo */
+    bottom: 125%;
     left: 50%;
-    margin-left: -35px; /* Mitad del ancho del tooltip */
+    transform: translateX(-50%);
     opacity: 0;
     transition: opacity 0.3s;
-    font-size: 0.8rem;
     white-space: nowrap;
+    font-size: 0.8em;
 }
 
 .btn-refresco:hover .tooltip-refresco {
@@ -186,7 +161,7 @@ h2 {
     opacity: 1;
 }
 
-/* Flecha del Tooltip */
+/* Flecha del tooltip */
 .tooltip-refresco::after {
     content: "";
     position: absolute;
@@ -195,27 +170,69 @@ h2 {
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: #333 transparent transparent transparent;
+    border-color: var(--color-text-primary) transparent transparent transparent;
 }
 
 
-/* --- FIN: SECCIÓN DE PRECIO Y REFRESCAS --- */
-
+/* Botón de Agregar al carrito (CTA Principal) */
 .btn-agregar {
-    /* Mantener estilo del botón de agregar */
+    margin-top: auto; /* Empuja el botón hacia el final de la tarjeta */
+    width: 100%;
+    text-decoration: none;
+    padding: 12px 20px;
     background-color: var(--color-accent-main);
     color: white;
-    padding: 12px 20px;
-    text-decoration: none;
-    text-align: center;
+    border: none;
     border-radius: 8px;
-    font-weight: 600;
-    margin-top: auto; /* Empuja el botón al final de la tarjeta */
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    cursor: pointer;
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    transition: background-color 0.3s, transform 0.1s, box-shadow 0.3s;
+    box-shadow: 0 4px 10px -2px rgba(214, 69, 30, 0.4);
 }
 
 .btn-agregar:hover {
-    background-color: #92694E;
-    transform: translateY(-1px);
+    background-color: var(--color-accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px -3px rgba(214, 69, 30, 0.6);
+}
+
+/* Badge de "Nuevo" o "Especial" (Ejemplo de mejora estética) */
+.producto-card::before {
+    content: '¡NUEVO!'; 
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #38a169; /* Verde llamativo */
+    color: white;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+}
+
+@media (max-width: 480px) {
+    .producto-card {
+        padding: 15px;
+    }
+    .producto-imagen {
+        max-width: 150px;
+    }
+    .refresco-botones {
+        gap: 5px;
+    }
+    .btn-refresco {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+    }
+    .btn-agregar {
+        font-size: 1rem;
+        padding: 10px 15px;
+    }
 }

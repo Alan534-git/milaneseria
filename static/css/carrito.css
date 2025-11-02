@@ -37,228 +37,217 @@ header h1 {
 .btn-accion {
     background-color: #6c757d; /* Gris para acciones neutrales */
     color: white;
-    padding: 12px 24px;
+    padding: 10px 15px;
+    border-radius: 20px;
     text-decoration: none;
-    border-radius: 10px;
-    font-weight: 600;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-weight: 500;
+    transition: background-color 0.2s;
 }
 
 .btn-accion:hover {
     background-color: #5a6268;
-    transform: translateY(-1px);
 }
 
 .btn-vaciar {
-    background-color: #dc3545; /* Rojo para vaciar */
+    background-color: #dc3545; /* Rojo para advertencia/vaciar */
 }
 
 .btn-vaciar:hover {
     background-color: #c82333;
 }
 
+
+/* Lista de Ítems del Carrito */
+.carrito-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
 .carrito-items {
     list-style: none;
     padding: 0;
     margin: 0;
-    border: 1px solid var(--color-border);
-    border-radius: 10px;
-    overflow: hidden;
+    flex-grow: 1; /* Permite que la lista crezca */
 }
 
 .carrito-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 15px 20px;
+    padding: 15px 0;
     border-bottom: 1px solid var(--color-border);
-    background-color: var(--color-card-bg); /* Usa variable */
-    transition: background-color 0.3s;
 }
 
 .carrito-item:last-child {
     border-bottom: none;
 }
 
-.item-img {
+.carrito-item-img {
     width: 60px;
     height: 60px;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: 6px;
     margin-right: 15px;
 }
 
-.item-nombre {
+.carrito-item-details {
     flex-grow: 1;
-    font-weight: 600;
-    font-size: 1.1rem;
+}
+
+.carrito-item-details h4 {
+    margin: 0 0 5px 0;
+    font-size: 1.1em;
     color: var(--color-text-primary);
 }
 
-/* Cantidad y Botones */
-.cantidad-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.carrito-item-details p {
+    margin: 0;
+    font-size: 0.9em;
+    color: var(--color-text-secondary);
+}
+
+.carrito-item-price {
+    font-weight: 700;
+    font-size: 1.2em;
+    color: var(--color-accent-main);
     margin-right: 20px;
 }
 
-.btn-cantidad {
-    background-color: #e9ecef;
-    color: #333;
-    padding: 5px 10px;
-    text-decoration: none;
-    border-radius: 6px;
-    font-weight: bold;
-    transition: background-color 0.2s;
-    line-height: 1;
+.btn-eliminar {
+    color: #dc3545;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2em;
+    transition: color 0.2s;
 }
 
-.btn-cantidad:hover {
-    background-color: #ced4da;
+.btn-eliminar:hover {
+    color: #c82333;
 }
 
-.cantidad-actual {
-    font-weight: 600;
-    min-width: 20px;
-    text-align: center;
-}
-
-/* Precio del Ítem */
-.item-precio-total {
-    font-weight: 700;
-    color: #28a745;
-    font-size: 1.2rem;
-    min-width: 80px;
-    text-align: right;
-}
-
-/* Total */
-.carrito-total {
-    text-align: right;
+/* Resumen y Botón de Pago */
+.carrito-summary {
+    background-color: var(--color-card-bg);
+    border-top: 2px solid var(--color-accent-main);
     padding: 20px;
-    font-size: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px var(--color-shadow);
+}
+
+.carrito-summary h3 {
+    margin-top: 0;
+    color: var(--color-accent-dark);
+}
+
+.carrito-total {
+    font-size: 1.5em;
     font-weight: 700;
-    border-top: 2px solid var(--color-border);
-    margin-top: 20px;
-    color: var(--color-text-primary);
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-top: 1px solid var(--color-border);
+    margin-top: 10px;
 }
 
 .carrito-total span {
-    color: #007bff; /* Azul para el valor total */
-    margin-left: 10px;
+    color: var(--color-accent-main);
 }
 
-/* Botón de Pagar */
 .btn-pagar {
     display: block;
     width: 100%;
-    background-color: #007bff;
-    color: white;
-    padding: 15px;
-    text-align: center;
-    text-decoration: none;
-    border-radius: 10px;
-    font-size: 1.2rem;
-    font-weight: 700;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    padding: 12px;
     margin-top: 20px;
+    background-color: var(--color-accent-main);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
 }
 
 .btn-pagar:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px);
+    background-color: #8c674e;
 }
 
-.btn-pagar:disabled {
-    background-color: #6c757d;
-    cursor: not-allowed;
-    transform: none;
+.btn-pagar:active {
+    transform: translateY(1px);
 }
 
+/* Mensaje de Carrito Vacío */
+.carrito-vacio-msg {
+    text-align: center;
+    padding: 50px;
+    font-size: 1.2em;
+    color: var(--color-text-secondary);
+    border: 1px dashed var(--color-border);
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
 
-/* ---------------------------------- */
-/* MODAL DE PAGO             */
-/* ---------------------------------- */
-
-.modal-backdrop {
+/* Estilos del Modal (Mismos que antes) */
+.modal {
+    display: none; /* Oculto por defecto */
     position: fixed;
-    top: 0;
+    z-index: 1000;
     left: 0;
+    top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: none; /* Oculto por defecto */
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+    backdrop-filter: blur(5px);
 }
 
 .modal-content {
-    background-color: var(--color-bg-container); /* Usa variable */
-    border-radius: 12px;
-    width: 90%;
+    background-color: var(--color-bg-container);
+    margin: 10% auto;
+    padding: 30px;
+    border-radius: 10px;
     max-width: 500px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     position: relative;
-    animation: fadeIn 0.3s ease-out;
-    transition: background-color 0.3s;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.modal-header {
-    padding: 20px 30px;
-    border-bottom: 1px solid var(--color-border); /* Usa variable */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal-header h2 {
-    margin: 0;
-    font-size: 1.5rem;
-    color: var(--color-accent-dark); /* Usa variable */
+    color: var(--color-text-primary);
 }
 
 .btn-cerrar-modal {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: var(--color-text-secondary); /* Usa variable */
+    color: var(--color-text-secondary);
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.btn-cerrar-modal:hover,
+.btn-cerrar-modal:focus {
+    color: var(--color-accent-dark);
+    text-decoration: none;
     cursor: pointer;
-    line-height: 1;
-    padding: 0;
-}
-.btn-cerrar-modal:hover {
-    color: var(--color-text-primary); /* Usa variable */
 }
 
-.modal-body {
-    padding: 30px;
-}
-
-.form-group {
+.modal-content h2 {
+    margin-top: 0;
     margin-bottom: 20px;
+    color: var(--color-accent-main);
+}
+
+/* Formulario */
+.form-group {
+    margin-bottom: 15px;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: var(--color-text-secondary); /* Usa variable */
-    font-size: 0.9rem;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: var(--color-text-primary);
 }
 
 .form-control {
     width: 100%;
-    padding: 14px;
-    font-size: 1rem;
+    padding: 10px;
     border: 1px solid var(--color-border); /* Usa variable */
     border-radius: 8px;
     box-sizing: border-box;
@@ -269,8 +258,8 @@ header h1 {
 
 .form-control:focus {
     outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
+    border-color: var(--color-accent-main); /* Uso el color principal de la tienda */
+    box-shadow: 0 0 0 3px rgba(166, 123, 91, 0.2);
 }
 
 .form-row {
@@ -282,6 +271,7 @@ header h1 {
     flex: 1;
 }
 
+/* Mensajes dentro del modal */
 .success-message, .error-message {
     text-align: center;
     padding: 20px;
@@ -292,6 +282,7 @@ header h1 {
 }
 
 .success-message {
+    /* Mantenemos el mensaje de éxito dentro del modal para la transición */
     background-color: #d4edda;
     color: #155724;
 }
@@ -301,48 +292,58 @@ header h1 {
     color: #721c24;
 }
 
+/* ---------------------------------- */
+/* NUEVO ESTILO: Diálogo de Compra Realizada (Flotante) */
+/* ---------------------------------- */
+.floating-success-dialog {
+    position: fixed;
+    top: -100px; /* Inicialmente fuera de la pantalla */
+    left: 0;
+    width: 100%;
+    background-color: #28a745; /* Verde fuerte */
+    color: white;
+    text-align: center;
+    padding: 15px;
+    font-size: 1.2em;
+    font-weight: 700;
+    z-index: 1100; /* Más alto que el modal */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: top 0.5s ease-out; /* Transición suave */
+}
+
+.floating-success-dialog.show {
+    top: 0; /* Deslizar hacia abajo */
+}
+
 /* Media Queries */
 @media (max-width: 600px) {
     .container {
-        margin: 15px;
-        padding: 20px;
+        margin: 10px;
+        padding: 15px;
     }
-
     .carrito-item {
         flex-wrap: wrap;
-        gap: 10px;
+        text-align: center;
+        justify-content: center;
     }
-
-    .item-nombre {
-        order: 1;
+    .carrito-item-details {
+        margin-top: 10px;
+        order: 1; /* Poner detalles debajo de la imagen */
         flex-basis: 100%;
-        margin-bottom: 10px;
     }
-
-    .item-img {
+    .carrito-item-price {
         order: 2;
+        margin-right: 10px;
     }
-
-    .cantidad-container {
+    .btn-eliminar {
         order: 3;
-        margin-right: 0;
     }
-
-    .item-precio-total {
-        order: 4;
+    .modal-content {
+        margin: 5% 5%;
+        max-width: 90%;
     }
-
     .form-row {
         flex-direction: column;
         gap: 0;
-    }
-
-    .form-row > * {
-        margin-bottom: 20px;
-    }
-
-    .acciones-top {
-        flex-direction: column;
-        gap: 10px;
     }
 }
