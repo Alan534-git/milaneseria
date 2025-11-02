@@ -3,13 +3,14 @@ from flask import Flask, render_template, redirect, url_for, session, jsonify
 app = Flask(__name__)
 app.secret_key = "clave-secreta"  # Necesario para manejar sesiones
 
-# Productos de ejemplo con rutas de imágenes
+# --- PRODUCTOS ACTUALIZADOS A MILANESAS ---
 productos = [
-    {"id": 1, "nombre": "Laptop Pro", "precio": 1200, "imagen": "https://placehold.co/600x400/EEE/31343C?text=Laptop+Pro"},
-    {"id": 2, "nombre": "Auriculares Inalámbricos", "precio": 50, "imagen": "https://placehold.co/600x400/EEE/31343C?text=Auriculares"},
-    {"id": 3, "nombre": "Mouse Gamer RGB", "precio": 30, "imagen": "https://placehold.co/600x400/EEE/31343C?text=Mouse+Gamer"},
-    {"id": 4, "nombre": "Teclado Mecánico", "precio": 80, "imagen": "https://placehold.co/600x400/EEE/31343C?text=Teclado"}
+    {"id": 1, "nombre": "Milanesa Napolitana", "precio": 25, "imagen": "https://placehold.co/600x400/D9534F/FFF?text=Milanesa+Napolitana"},
+    {"id": 2, "nombre": "Milanesa a Caballo", "precio": 22, "imagen": "https://placehold.co/600x400/A67B5B/FFF?text=Milanesa+a+Caballo"},
+    {"id": 3, "nombre": "Milanesa Fugazzeta", "precio": 24, "imagen": "https://placehold.co/600x400/FFC107/333?text=Milanesa+Fugazzeta"},
+    {"id": 4, "nombre": "Milanesa Cheddar y Bacon", "precio": 26, "imagen": "https://placehold.co/600x400/E67E22/FFF?text=Milanesa+Cheddar"}
 ]
+# --- FIN DE CAMBIOS EN PRODUCTOS ---
 
 @app.route("/")
 def index():
@@ -91,5 +92,22 @@ def vaciar():
     session.pop("carrito", None)
     return redirect(url_for("carrito"))
 
+# --- NUEVA RUTA PARA SIMULAR EL PAGO ---
+@app.route("/api/procesar_pago", methods=['POST'])
+def api_procesar_pago():
+    """Simula el procesamiento de un pago y vacía el carrito."""
+    # En una aplicación real, aquí iría la lógica de validación de tarjeta
+    # y la integración con la pasarela de pagos (Stripe, Mercado Pago, etc.)
+    
+    # Simulamos un pago exitoso vaciando el carrito
+    if "carrito" in session and session["carrito"]:
+        session.pop("carrito", None)
+        session.modified = True
+        return jsonify({'success': True, 'message': 'Pago procesado exitosamente'})
+    
+    return jsonify({'success': False, 'message': 'El carrito estaba vacío'}), 400
+# --- FIN DE LA NUEVA RUTA ---
+
 if __name__ == "__main__":
     app.run(debug=True)
+

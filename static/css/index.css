@@ -28,22 +28,24 @@ header h1 {
     font-weight: 700;
 }
 
+/* --- ESTILOS DE BOTÓN ACTUALIZADOS --- */
 .btn-carrito {
-    background-color: #007bff;
+    background-color: #A67B5B; /* Marrón cálido */
     color: white;
     padding: 12px 24px;
     text-decoration: none;
     border-radius: 10px;
     font-weight: 600;
     transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(166, 123, 91, 0.3);
 }
 
 .btn-carrito:hover {
-    background-color: #0056b3;
+    background-color: #8C664A; /* Marrón más oscuro */
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
+    box-shadow: 0 6px 20px rgba(166, 123, 91, 0.4);
 }
+/* --- FIN DE CAMBIOS --- */
 
 hr {
     border: none;
@@ -102,10 +104,11 @@ h2 {
     color: #333;
 }
 
+/* --- ESTILOS DE PRECIO Y BOTÓN ACTUALIZADOS --- */
 .precio {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #28a745;
+    color: #A67B5B; /* Marrón cálido */
     margin-bottom: 15px;
 }
 
@@ -113,7 +116,7 @@ h2 {
     display: block;
     width: 100%;
     padding: 15px;
-    background-color: #28a745;
+    background-color: #D9534F; /* Rojo (salsa) */
     color: white;
     text-align: center;
     text-decoration: none;
@@ -121,11 +124,13 @@ h2 {
     font-weight: 600;
     margin-top: auto;
     transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
+    box-shadow: 0 4px 15px rgba(217, 83, 79, 0.3);
 }
 
 .btn-agregar:hover {
-    background-color: #218838;
+    background-color: #C9302C; /* Rojo más oscuro */
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+    box-shadow: 0 6px 20px rgba(217, 83, 79, 0.4);
 }
+/* --- FIN DE CAMBIOS --- */
+
