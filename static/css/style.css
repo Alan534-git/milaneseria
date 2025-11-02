@@ -1,0 +1,107 @@
+/* ---------------------------------- */
+/* VARIABLES CSS             */
+/* ---------------------------------- */
+:root {
+    /* Modo Claro */
+    --color-bg-body: #f0f2f5;
+    --color-bg-container: #ffffff;
+    --color-text-primary: #333;
+    --color-text-secondary: #555;
+    --color-border: #e0e0e0;
+    --color-shadow: rgba(0, 0, 0, 0.1);
+    --color-card-bg: #fff;
+    --color-card-shadow: rgba(0, 0, 0, 0.1);
+    --color-accent-dark: #31343C; /* Color para h1 */
+    --color-accent-main: #A67B5B; /* Color principal de botones (Marrón cálido) */
+    --color-dark-mode-icon: #31343C; /* Ícono de sol */
+}
+
+/* ---------------------------------- */
+/* MODO OSCURO               */
+/* ---------------------------------- */
+body.dark-mode {
+    --color-bg-body: #121212;
+    --color-bg-container: #1e1e1e;
+    --color-text-primary: #e0e0e0;
+    --color-text-secondary: #aaaaaa;
+    --color-border: #333333;
+    --color-shadow: rgba(255, 255, 255, 0.05);
+    --color-card-bg: #2a2a2a;
+    --color-card-shadow: rgba(0, 0, 0, 0.5);
+    --color-accent-dark: #f0f0f0;
+    --color-dark-mode-icon: #fdd835; /* Ícono de luna amarillo */
+}
+
+
+/* ---------------------------------- */
+/* ESTILOS GLOBALES          */
+/* ---------------------------------- */
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    background-color: var(--color-bg-body);
+    color: var(--color-text-primary);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: var(--color-bg-container);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px var(--color-shadow);
+}
+
+h1, h2 {
+    color: var(--color-accent-dark);
+}
+
+/* ---------------------------------- */
+/* BOTÓN TEMA CLARO/OSCURO   */
+/* ---------------------------------- */
+.theme-switch-container {
+    display: flex;
+    align-items: center;
+    position: relative; /* Para posicionar el botón de forma absoluta si es necesario en el header */
+}
+
+#theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem; /* Ajuste el tamaño del ícono */
+    padding: 10px;
+    border-radius: 50%;
+    transition: background-color 0.3s, transform 0.2s;
+    line-height: 1; /* Asegura que el ícono esté centrado */
+    color: var(--color-dark-mode-icon); /* Usa el color de la variable */
+}
+
+#theme-toggle:hover {
+    background-color: var(--color-border);
+    transform: scale(1.1);
+}
+
+/* Estilo para el ícono de sol/luna */
+#theme-toggle .fa-sun,
+#theme-toggle .fa-moon {
+    pointer-events: none; /* Asegura que el click se registre en el botón */
+}
+
+/* Ocultar el sol en dark-mode y la luna en light-mode */
+body:not(.dark-mode) #theme-toggle .fa-moon {
+    display: none;
+}
+body.dark-mode #theme-toggle .fa-sun {
+    display: none;
+}
+body:not(.dark-mode) #theme-toggle .fa-sun {
+    display: block;
+}
+body.dark-mode #theme-toggle .fa-moon {
+    display: block;
+}
+
+/* Añade las utilidades para los iconos de Font Awesome */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css');

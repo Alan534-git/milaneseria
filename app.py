@@ -1,5 +1,8 @@
-from flask import Flask, render_template, redirect, url_for, session, jsonify
+from flask import Flask, render_template, redirect, url_for, session, jsonify, request
+import os
 
+# NOTA: La clave secreta debe ser una cadena de bytes aleatoria en producción
+# Para Canvas, usamos un valor placeholder.
 app = Flask(__name__)
 app.secret_key = "clave-secreta"  # Necesario para manejar sesiones
 
@@ -15,68 +18,78 @@ productos = [
 @app.route("/")
 def index():
     """Renderiza la página principal de la tienda y pasa la cantidad total del carrito."""
-    carrito = session.get('carrito', [])
-    total_cantidad = sum(item.get('cantidad', 0) for item in carrito)
+    carrito = session.get("carrito", [])
+    total_cantidad = sum(p["cantidad"] for p in carrito)
     return render_template("index.html", productos=productos, total_cantidad=total_cantidad)
 
-@app.route("/agregar/<int:id>")
-def agregar(id):
-    """Agrega o incrementa la cantidad de un producto en el carrito (fallback sin JS)."""
-    if "carrito" not in session:
-        session["carrito"] = []
-    
-    producto = next((p for p in productos if p["id"] == id), None)
-    if producto:
-        item_existente = next((item for item in session["carrito"] if item["id"] == id), None)
-        if item_existente:
-            item_existente["cantidad"] += 1
-        else:
-            nuevo_item = producto.copy()
-            nuevo_item["cantidad"] = 1
-            session["carrito"].append(nuevo_item)
-        session.modified = True
-
-    return redirect(url_for("index"))
-
+# --- ENDPOINT ACTUALIZADO: ACEPTA POST Y DEVUELVE JSON ---
 @app.route("/api/agregar/<int:id>", methods=['POST'])
 def api_agregar(id):
-    """Endpoint de API para agregar un producto y devolver la nueva cantidad total."""
-    if "carrito" not in session:
-        session["carrito"] = []
+    """
+    Agrega un producto al carrito y devuelve la nueva cantidad total en formato JSON.
+    Se utiliza para la comunicación AJAX con el botón "Agregar al carrito".
+    """
+    producto_a_agregar = next((p for p in productos if p["id"] == id), None)
     
-    producto = next((p for p in productos if p["id"] == id), None)
-    if producto:
-        item_existente = next((item for item in session["carrito"] if item["id"] == id), None)
-        if item_existente:
-            item_existente["cantidad"] += 1
-        else:
-            nuevo_item = producto.copy()
-            nuevo_item["cantidad"] = 1
-            session["carrito"].append(nuevo_item)
-        session.modified = True
-    
-    total_cantidad = sum(item.get('cantidad', 0) for item in session.get("carrito", []))
-    return jsonify({'total_cantidad': total_cantidad})
+    if not producto_a_agregar:
+        return jsonify({'error': 'Producto no encontrado'}), 404
 
+    carrito = session.get("carrito", [])
+    item_existente = next((item for item in carrito if item["id"] == id), None)
+
+    if item_existente:
+        item_existente["cantidad"] += 1
+    else:
+        # Se agrega una copia del producto con cantidad inicial
+        nuevo_item = producto_a_agregar.copy()
+        nuevo_item["cantidad"] = 1
+        carrito.append(nuevo_item)
+
+    session["carrito"] = carrito
+    session.modified = True
+    
+    total_cantidad = sum(p["cantidad"] for p in carrito)
+    
+    # Devuelve una respuesta JSON que el frontend espera
+    return jsonify({'success': True, 'total_cantidad': total_cantidad})
+
+# --- RUTA ORIGINAL DE AGREGAR (redirige si se accede directamente) ---
+@app.route("/agregar/<int:id>")
+def agregar(id):
+    """Función de redirección para compatibilidad, aunque se usa /api/agregar."""
+    # En un entorno real, esta ruta solo debería ser un redirect si se usa AJAX
+    # En este caso, redirigimos al inicio si se accede directamente.
+    return redirect(url_for("index"))
+# ---------------------------------------------------------------------
 
 @app.route("/eliminar/<int:id>")
 def eliminar(id):
-    """Elimina un producto del carrito de compras."""
-    if "carrito" in session:
-        session["carrito"] = [item for item in session["carrito"] if item["id"] != id]
-        session.modified = True
+    """Elimina un producto completamente del carrito."""
+    carrito = session.get("carrito", [])
+    
+    # Filtrar el carrito para remover el producto con el ID dado
+    carrito = [p for p in carrito if p["id"] != id]
+    
+    session["carrito"] = carrito
+    session.modified = True
     return redirect(url_for("carrito"))
 
 @app.route("/cambiar_cantidad/<int:id>/<int:cantidad>")
 def cambiar_cantidad(id, cantidad):
     """Cambia la cantidad de un producto en el carrito."""
-    if "carrito" in session:
-        item_existente = next((item for item in session["carrito"] if item["id"] == id), None)
-        if item_existente:
-            item_existente["cantidad"] = cantidad
-            if item_existente["cantidad"] <= 0:
-                return redirect(url_for("eliminar", id=id))
-            session.modified = True
+    if cantidad < 0:
+        cantidad = 0
+
+    carrito = session.get("carrito", [])
+    item_existente = next((item for item in carrito if item["id"] == id), None)
+
+    if item_existente:
+        item_existente["cantidad"] = cantidad
+        if item_existente["cantidad"] <= 0:
+            # Si la cantidad es cero o menos, eliminar el ítem
+            return redirect(url_for("eliminar", id=id))
+        session.modified = True
+        
     return redirect(url_for("carrito"))
 
 @app.route("/carrito")
@@ -84,7 +97,11 @@ def carrito():
     """Muestra el contenido del carrito de compras."""
     carrito = session.get("carrito", [])
     total = sum(p["precio"] * p["cantidad"] for p in carrito) if carrito else 0
-    return render_template("carrito.html", carrito=carrito, total=total)
+    
+    # Para el pago, usamos una simulación de total
+    total_pago = total
+    
+    return render_template("carrito.html", carrito=carrito, total=total_pago)
 
 @app.route("/vaciar")
 def vaciar():
@@ -92,22 +109,19 @@ def vaciar():
     session.pop("carrito", None)
     return redirect(url_for("carrito"))
 
-# --- NUEVA RUTA PARA SIMULAR EL PAGO ---
+# --- RUTA PARA SIMULAR EL PAGO ---
 @app.route("/api/procesar_pago", methods=['POST'])
 def api_procesar_pago():
     """Simula el procesamiento de un pago y vacía el carrito."""
-    # En una aplicación real, aquí iría la lógica de validación de tarjeta
-    # y la integración con la pasarela de pagos (Stripe, Mercado Pago, etc.)
     
     # Simulamos un pago exitoso vaciando el carrito
     if "carrito" in session and session["carrito"]:
         session.pop("carrito", None)
         session.modified = True
-        return jsonify({'success': True, 'message': 'Pago procesado exitosamente'})
-    
-    return jsonify({'success': False, 'message': 'El carrito estaba vacío'}), 400
-# --- FIN DE LA NUEVA RUTA ---
+        return jsonify({'success': True, 'message': 'Pago exitoso. Carrito vaciado.'})
+    else:
+        # Retorna error si el carrito ya está vacío
+        return jsonify({'success': False, 'message': 'El carrito ya está vacío.'}), 400
 
 if __name__ == "__main__":
     app.run(debug=True)
-

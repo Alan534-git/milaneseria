@@ -1,10 +1,4 @@
-/* Estilos Generales */
-body {
-    font-family: Arial, Helvetica, sans-serif; /* Fuente estándar */
-    margin: 0;
-    background-color: #f0f2f5;
-    color: #333;
-}
+/* Este archivo usa las variables definidas en style.css */
 
 .container {
     max-width: 1200px;
@@ -19,69 +13,84 @@ header {
     align-items: center;
     margin-bottom: 20px;
     padding: 15px 0;
+    border-bottom: 2px solid var(--color-border); /* Usa variable */
 }
 
 header h1 {
-    color: #31343C;
+    color: var(--color-accent-dark); /* Usa variable */
     margin: 0;
     font-size: 2.5rem;
     font-weight: 700;
 }
 
-/* --- ESTILOS DE BOTÓN ACTUALIZADOS --- */
+/* Contenedor del Carrito y Dark Mode */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* --- ESTILOS DE BOTÓN CARRITO --- */
 .btn-carrito {
-    background-color: #A67B5B; /* Marrón cálido */
+    background-color: var(--color-accent-main); /* Usa variable */
     color: white;
     padding: 12px 24px;
     text-decoration: none;
     border-radius: 10px;
     font-weight: 600;
     transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 15px rgba(166, 123, 91, 0.3);
+    box-shadow: 0 4px 15px var(--color-shadow);
 }
 
 .btn-carrito:hover {
-    background-color: #8C664A; /* Marrón más oscuro */
+    background-color: #92694E; /* Un tono más oscuro del marrón */
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(166, 123, 91, 0.4);
-}
-/* --- FIN DE CAMBIOS --- */
-
-hr {
-    border: none;
-    height: 2px;
-    background-color: #ddd;
-    margin-bottom: 30px;
+    box-shadow: 0 6px 20px var(--color-shadow);
 }
 
+.btn-carrito #cart-count {
+    display: inline-block;
+    min-width: 20px;
+    text-align: center;
+    background-color: #ffc107; /* Amarillo para el contador */
+    color: #333;
+    border-radius: 50%;
+    padding: 2px 5px;
+    margin-left: 5px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+/* --- FIN: ESTILOS DE BOTÓN CARRITO --- */
+
+/* Contenedor de Productos */
 h2 {
     text-align: center;
-    color: #31343C;
+    margin-top: 30px;
     margin-bottom: 30px;
     font-size: 2rem;
 }
 
-/* Contenedor de Productos */
 .productos-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 30px;
+    padding-bottom: 50px;
 }
 
 /* Tarjeta de Producto */
 .producto-card {
-    background-color: #fff;
+    background-color: var(--color-card-bg); /* Usa variable */
     border-radius: 16px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 25px var(--color-card-shadow); /* Usa variable */
     overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s;
     display: flex;
     flex-direction: column;
 }
 
 .producto-card:hover {
     transform: translateY(-10px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 12px 30px var(--color-card-shadow);
 }
 
 .producto-img {
@@ -101,36 +110,112 @@ h2 {
 .producto-info h3 {
     margin: 0 0 10px 0;
     font-size: 1.4rem;
-    color: #333;
+    color: var(--color-text-primary); /* Usa variable */
 }
 
-/* --- ESTILOS DE PRECIO Y BOTÓN ACTUALIZADOS --- */
-.precio {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #A67B5B; /* Marrón cálido */
+/* --- SECCIÓN DE PRECIO Y REFRESCAS (NUEVO) --- */
+.precio-refrescos-container {
+    display: flex;
+    flex-direction: column;
     margin-bottom: 15px;
 }
 
-.btn-agregar {
-    display: block;
-    width: 100%;
-    padding: 15px;
-    background-color: #D9534F; /* Rojo (salsa) */
-    color: white;
+.precio-main {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #28a745; /* Verde para el precio */
+    margin-bottom: 10px;
+}
+
+.refrescos-selector {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.btn-refresco {
+    /* Estilo del botón de refresco */
+    background-color: var(--color-border);
+    border: 2px solid var(--color-border);
+    color: var(--color-text-primary);
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    position: relative; /* Para el tooltip */
+    font-size: 1.1rem;
+}
+
+.btn-refresco:hover {
+    border-color: var(--color-accent-main);
+}
+
+.btn-refresco.selected {
+    /* Estilo cuando está seleccionado */
+    background-color: #ffc107; /* Amarillo */
+    border-color: #ffc107;
+    box-shadow: 0 0 8px rgba(255, 193, 7, 0.5);
+    transform: scale(1.05);
+}
+
+/* Tooltip (Nuevo) */
+.tooltip-refresco {
+    visibility: hidden;
+    background-color: #333;
+    color: #fff;
     text-align: center;
+    border-radius: 6px;
+    padding: 5px 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; /* Posiciona encima del botón */
+    left: 50%;
+    margin-left: -35px; /* Mitad del ancho del tooltip */
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.btn-refresco:hover .tooltip-refresco {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Flecha del Tooltip */
+.tooltip-refresco::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+
+/* --- FIN: SECCIÓN DE PRECIO Y REFRESCAS --- */
+
+.btn-agregar {
+    /* Mantener estilo del botón de agregar */
+    background-color: var(--color-accent-main);
+    color: white;
+    padding: 12px 20px;
     text-decoration: none;
-    border-radius: 10px;
+    text-align: center;
+    border-radius: 8px;
     font-weight: 600;
-    margin-top: auto;
-    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 15px rgba(217, 83, 79, 0.3);
+    margin-top: auto; /* Empuja el botón al final de la tarjeta */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    cursor: pointer;
 }
 
 .btn-agregar:hover {
-    background-color: #C9302C; /* Rojo más oscuro */
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(217, 83, 79, 0.4);
+    background-color: #92694E;
+    transform: translateY(-1px);
 }
-/* --- FIN DE CAMBIOS --- */
-

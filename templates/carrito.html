@@ -4,13 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carrito de Compras</title>
-    <!-- Se eliminaron las librerías externas de fuentes e íconos -->
+    <!-- Importa el nuevo archivo base de estilos (incluye Font Awesome y dark mode) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/carrito.css') }}">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>🛒 Tu Carrito de Compras</h1>
+            <!-- Botón de Claro/Oscuro -->
+            <button id="theme-toggle" aria-label="Cambiar tema">
+                <i class="fas fa-sun"></i>
+                <i class="fas fa-moon"></i>
+            </button>
         </header>
 
         <div class="acciones-top">
@@ -32,128 +38,139 @@
                                 <span class="cantidad-actual">{{ item.cantidad }}</span>
                                 <a href="/cambiar_cantidad/{{ item.id }}/{{ item.cantidad + 1 }}" class="btn-cantidad">+</a>
                             </div>
-                            <span class="item-precio">${{ "%.2f"|format(item.precio * item.cantidad) }}</span>
-                            <a href="/eliminar/{{ item.id }}" class="btn-eliminar">🗑️</a>
+                            <span class="item-precio-total">${{ "%.2f"|format(item.precio * item.cantidad) }}</span>
                         </li>
                     {% endfor %}
                 </ul>
-                <div class="total-container">
-                    <h3>Total: <span class="total-precio">${{ "%.2f"|format(total) }}</span></h3>
-                    <!-- ID agregado al botón para identificarlo con JS -->
-                    <button class="btn-pagar" id="btn-proceder-pago">💳 Proceder al Pago</button>
+
+                <div class="carrito-total">
+                    Total: <span>${{ "%.2f"|format(total) }}</span>
                 </div>
+
+                <button id="btn-iniciar-pago" class="btn-pagar">
+                    Finalizar Compra (${{ "%.2f"|format(total) }})
+                </button>
+
             {% else %}
-                <p class="carrito-vacio">El carrito está vacío. ¡Añade algunos productos!</p>
+                <p style="text-align: center; font-size: 1.2rem; padding: 50px;">
+                    Tu carrito está vacío. ¡Añade algunas milanesas! 😋
+                </p>
             {% endif %}
         </div>
     </div>
 
-    <!-- ===== INICIO: MODAL DE PAGO ===== -->
-    <!-- Fondo oscuro semitransparente -->
-    <div id="pago-modal-overlay"></div>
-    
-    <!-- Contenido del Modal -->
-    <div id="pago-modal">
-        <div class="modal-header">
-            <h2>💳 Formulario de Pago</h2>
-            <!-- Botón para cerrar el modal -->
-            <button id="btn-cerrar-modal" class="btn-cerrar-modal">&times;</button>
-        </div>
-        <div class="modal-body">
-            <!-- Formulario de pago -->
-            <form id="payment-form">
-                <div class="form-group">
-                    <label for="card-name">Nombre en la Tarjeta</label>
-                    <input type="text" id="card-name" class="form-control" placeholder="Juan Perez" required>
-                </div>
-                <div class="form-group">
-                    <label for="card-number">Número de la Tarjeta</label>
-                    <input type="text" id="card-number" class="form-control" placeholder="0000 0000 0000 0000" required minlength="16" maxlength="19">
-                </div>
-                <div class="form-row">
-                    <div class="form-group half-width">
-                        <label for="card-expiry">Vencimiento (MM/YY)</label>
-                        <input type="text" id="card-expiry" class="form-control" placeholder="MM/YY" required minlength="5" maxlength="5">
-                    </div>
-                    <div class="form-group half-width">
-                        <label for="card-cvc">CVC</label>
-                        <input type="text" id="card-cvc" class="form-control" placeholder="123" required minlength="3" maxlength="4">
-                    </div>
-                </div>
-                <!-- El botón de pagar muestra el total a pagar -->
-                <button type="submit" class="btn-pagar modal-btn-pagar" id="btn-submit-pago">Pagar ${{ "%.2f"|format(total) }}</button>
-            </form>
-            
-            <!-- Mensaje de éxito (oculto por defecto) -->
-            <div id="pago-success-message" style="display: none;">
-                <h3>¡Pago exitoso!</h3>
-                <p>Tu compra ha sido procesada. Serás redirigido al inicio.</p>
+    <!-- ===== INICIO: MODAL DE PAGO (sin cambios) ===== -->
+    <div id="modal-pago" class="modal-backdrop">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Procesar Pago</h2>
+                <button class="btn-cerrar-modal" aria-label="Cerrar Modal">&times;</button>
             </div>
-            
-            <!-- Mensaje de error (oculto por defecto) -->
-            <div id="pago-error-message" style="display: none;">
-                <h3>Error en el Pago</h3>
-                <p>No se pudo procesar el pago. Por favor, intenta de nuevo.</p>
+            <div class="modal-body">
+                <div id="payment-form">
+                    <form id="form-pago">
+                        <div class="form-group">
+                            <label for="card-number">Número de Tarjeta</label>
+                            <input type="text" id="card-number" class="form-control" placeholder="XXXX XXXX XXXX XXXX" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="card-name">Nombre en la Tarjeta</label>
+                            <input type="text" id="card-name" class="form-control" placeholder="Juan Pérez" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="card-expiry">Vencimiento (MM/AA)</label>
+                                <input type="text" id="card-expiry" class="form-control" placeholder="12/26" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="card-cvc">CVC</label>
+                                <input type="text" id="card-cvc" class="form-control" placeholder="123" required>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" id="btn-submit-pago" class="btn-pagar">
+                            Pagar ${{ "%.2f"|format(total) }}
+                        </button>
+                    </form>
+                </div>
+                
+                <div id="success-message" class="success-message">
+                    ✅ ¡Pago procesado con éxito! Redirigiendo...
+                </div>
+                
+                <div id="error-message" class="error-message">
+                    ❌ Error al procesar el pago. Por favor, intente de nuevo.
+                </div>
             </div>
         </div>
     </div>
     <!-- ===== FIN: MODAL DE PAGO ===== -->
 
-    <!-- ===== INICIO: SCRIPT DEL MODAL ===== -->
+
+    <!-- ===== INICIO: SCRIPT DEL MODAL Y TEMA ===== -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Solo ejecutar este script si el botón de proceder al pago existe
-        const btnProcederPago = document.getElementById('btn-proceder-pago');
-        if (!btnProcederPago) {
-            return; // No hace nada si no hay botón de pago (ej. carrito vacío)
+        // ---------------------------------
+        // 1. LÓGICA DE MODO CLARO/OSCURO
+        // ---------------------------------
+        const themeToggle = document.getElementById('theme-toggle');
+        
+        const storedTheme = localStorage.getItem('theme');
+        if (storedTheme) {
+            document.body.classList.toggle('dark-mode', storedTheme === 'dark');
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.classList.add('dark-mode');
         }
 
-        // Selección de elementos del DOM
-        const modalOverlay = document.getElementById('pago-modal-overlay');
-        const modal = document.getElementById('pago-modal');
-        const btnCerrarModal = document.getElementById('btn-cerrar-modal');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+        });
+
+
+        // ---------------------------------
+        // 2. LÓGICA DEL MODAL DE PAGO
+        // ---------------------------------
+        const modal = document.getElementById('modal-pago');
+        const btnPagar = document.getElementById('btn-iniciar-pago');
+        const btnCerrar = modal.querySelector('.btn-cerrar-modal');
         const paymentForm = document.getElementById('payment-form');
+        const formPago = document.getElementById('form-pago');
         const btnSubmitPago = document.getElementById('btn-submit-pago');
-        const successMessage = document.getElementById('pago-success-message');
-        const errorMessage = document.getElementById('pago-error-message');
+        const successMessage = document.getElementById('success-message');
+        const errorMessage = document.getElementById('error-message');
 
-        // Función para abrir el modal
-        function abrirModal() {
-            modalOverlay.style.display = 'block';
-            modal.style.display = 'block';
+        if (btnPagar) {
+             btnPagar.addEventListener('click', () => {
+                modal.style.display = 'flex';
+                // Resetear el estado del modal
+                paymentForm.style.display = 'block';
+                successMessage.style.display = 'none';
+                errorMessage.style.display = 'none';
+            });
         }
-
-        // Función para cerrar el modal
-        function cerrarModal() {
-            modalOverlay.style.display = 'none';
+        
+        btnCerrar.addEventListener('click', () => {
             modal.style.display = 'none';
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Manejo del envío del formulario de pago
+        formPago.addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            // Resetea el formulario por si hubo un error
-            paymentForm.style.display = 'block';
-            successMessage.style.display = 'none';
-            errorMessage.style.display = 'none';
-            btnSubmitPago.disabled = false;
-            // Restaura el texto original del botón
-            btnSubmitPago.textContent = 'Pagar ${{ "%.2f"|format(total) }}';
-        }
-
-        // Abrir modal al hacer clic en "Proceder al Pago"
-        btnProcederPago.addEventListener('click', abrirModal);
-
-        // Cerrar modal al hacer clic en la 'X' o en el fondo
-        btnCerrarModal.addEventListener('click', cerrarModal);
-        modalOverlay.addEventListener('click', cerrarModal);
-
-        // Manejar el envío del formulario de pago
-        paymentForm.addEventListener('submit', function(event) {
-            event.preventDefault(); // Evita que la página se recargue
-
-            // Simula estado de carga
+            // Deshabilita el botón y cambia el texto
             btnSubmitPago.disabled = true;
             btnSubmitPago.textContent = 'Procesando...';
             errorMessage.style.display = 'none'; // Oculta errores previos
 
-            // Llama a la API del backend para "procesar" el pago
+            // Simulación de la llamada a la API
             fetch('/api/procesar_pago', {
                 method: 'POST',
                 headers: {
@@ -162,7 +179,6 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    // Si el servidor responde con un error (ej. 400)
                     throw new Error('Respuesta del servidor no fue OK');
                 }
                 return response.json();
@@ -187,7 +203,9 @@
                 console.error('Error en el pago:', error);
                 errorMessage.style.display = 'block';
                 btnSubmitPago.disabled = false; // Reactiva el botón
-                btnSubmitPago.textContent = 'Pagar ${{ "%.2f"|format(total) }}';
+                // Restaura el texto del botón al total original
+                const totalText = document.querySelector('.carrito-total span').textContent;
+                btnSubmitPago.textContent = `Pagar ${totalText}`;
             });
         });
     });

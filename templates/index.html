@@ -4,28 +4,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tienda - Dinámica</title>
+    <!-- Importa el nuevo archivo base de estilos (incluye Font Awesome y dark mode) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>🏪 Tienda Online</h1>
-            <a href="/carrito" class="btn-carrito">
-                🛒 Ver Carrito (<span id="cart-count">{{ total_cantidad }}</span>)
-            </a>
+            <div class="header-right">
+                <!-- Botón de Claro/Oscuro -->
+                <button id="theme-toggle" aria-label="Cambiar tema">
+                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-moon"></i>
+                </button>
+                <!-- Botón de Carrito -->
+                <a href="/carrito" class="btn-carrito">
+                    🛒 Ver Carrito (<span id="cart-count">{{ total_cantidad }}</span>)
+                </a>
+            </div>
         </header>
-        
+
         <hr>
 
         <h2>Nuestros Productos</h2>
         <div class="productos-container">
             {% for p in productos %}
-                <div class="producto-card">
+                <div class="producto-card" data-product-id="{{ p.id }}">
                     <img src="{{ p.imagen }}" alt="Imagen de {{ p.nombre }}" class="producto-img">
                     <div class="producto-info">
                         <h3>{{ p.nombre }}</h3>
-                        <p class="precio">${{ "%.2f"|format(p.precio) }}</p>
-                        <a href="/agregar/{{ p.id }}" class="btn-agregar" data-product-id="{{ p.id }}">
+
+                        <div class="precio-refrescos-container">
+                            <p class="precio-main">$<span class="milanesa-precio">{{ "%.2f"|format(p.precio) }}</span></p>
+
+                            <!-- Selector de Refrescos (5 Marcas Conocidas) -->
+                            <div class="refrescos-selector" data-base-price="{{ p.precio }}">
+                                <!-- Los precios son ficticios para la simulación -->
+                                <button class="btn-refresco" data-refresco-id="1" data-price="1.50" aria-label="Refresco Coca-Cola">
+                                    <i class="fa-solid fa-c"></i>
+                                    <span class="tooltip-refresco">Refresco C: $1.50</span>
+                                </button>
+                                <button class="btn-refresco" data-refresco-id="2" data-price="1.75" aria-label="Refresco Pepsi">
+                                    <i class="fa-solid fa-p"></i>
+                                    <span class="tooltip-refresco">Refresco P: $1.75</span>
+                                </button>
+                                <button class="btn-refresco" data-refresco-id="3" data-price="1.25" aria-label="Refresco Sprite">
+                                    <i class="fa-solid fa-s"></i>
+                                    <span class="tooltip-refresco">Refresco S: $1.25</span>
+                                </button>
+                                <button class="btn-refresco" data-refresco-id="4" data-price="1.60" aria-label="Refresco Fanta">
+                                    <i class="fa-solid fa-f"></i>
+                                    <span class="tooltip-refresco">Refresco F: $1.60</span>
+                                </button>
+                                <button class="btn-refresco" data-refresco-id="5" data-price="1.00" aria-label="Refresco 7Up">
+                                    <i class="fa-solid fa-7"></i>
+                                    <span class="tooltip-refresco">Refresco 7: $1.00</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <a href="/agregar/{{ p.id }}" class="btn-agregar" data-product-id="{{ p.id }}" data-refresco-price="0">
                             ➕ Agregar al carrito
                         </a>
                     </div>
@@ -35,19 +74,105 @@
     </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Selecciona todos los botones de "Agregar al carrito"
-        const agregarBotones = document.querySelectorAll('.btn-agregar');
-        // Selecciona el span donde se muestra el número de productos
-        const cartCountSpan = document.getElementById('cart-count');
+    // Datos de los refrescos para el script
+    const refrescoData = {
+        '1': 1.50, // Coca-Cola
+        '2': 1.75, // Pepsi
+        '3': 1.25, // Sprite
+        '4': 1.60, // Fanta
+        '5': 1.00  // 7Up
+    };
 
-        agregarBotones.forEach(button => {
-            button.addEventListener('click', function(event) {
-                // Previene el comportamiento por defecto del enlace (navegar a otra página)
-                event.preventDefault(); 
+    document.addEventListener('DOMContentLoaded', function() {
+        const cartCountSpan = document.getElementById('cart-count');
+        const themeToggle = document.getElementById('theme-toggle');
+
+        // ---------------------------------
+        // 1. LÓGICA DE MODO CLARO/OSCURO
+        // ---------------------------------
+        const storedTheme = localStorage.getItem('theme');
+        if (storedTheme) {
+            document.body.classList.toggle('dark-mode', storedTheme === 'dark');
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            // Establecer modo oscuro por defecto si el sistema lo prefiere
+            document.body.classList.add('dark-mode');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+        });
+
+
+        // ---------------------------------
+        // 2. LÓGICA DE SELECCIÓN DE REFRESCOS
+        // ---------------------------------
+
+        const productoCards = document.querySelectorAll('.producto-card');
+
+        productoCards.forEach(card => {
+            const selector = card.querySelector('.refrescos-selector');
+            const basePrice = parseFloat(selector.dataset.basePrice);
+            const precioDisplay = card.querySelector('.milanesa-precio');
+            const btnAgregar = card.querySelector('.btn-agregar');
+            const refreshButtons = card.querySelectorAll('.btn-refresco');
+
+            // Función para actualizar el precio y el data-attribute
+            const updatePrice = (refrescoPrice) => {
+                const newTotalPrice = basePrice + refrescoPrice;
+                // Actualiza la visualización del precio
+                precioDisplay.textContent = newTotalPrice.toFixed(2);
+                // Actualiza el atributo que se usará para el envío al servidor (simulado)
+                btnAgregar.dataset.refrescoPrice = refrescoPrice.toFixed(2);
+                // Actualiza el texto del botón Agregar
+                btnAgregar.textContent = `➕ Agregar al carrito ($${newTotalPrice.toFixed(2)})`;
+            };
+
+            // Inicializar el botón de agregar con el precio base
+            updatePrice(0);
+
+
+            refreshButtons.forEach(btn => {
+                const price = parseFloat(btn.dataset.price);
+
+                // Manejar la selección del refresco
+                btn.addEventListener('click', () => {
+                    let refrescoPrice = 0;
+                    
+                    // Si el botón ya está seleccionado, lo deseleccionamos
+                    if (btn.classList.contains('selected')) {
+                        btn.classList.remove('selected');
+                        // El precio del refresco es 0, volvemos solo al precio base
+                    } else {
+                        // Deselecciona cualquier otro botón en el mismo grupo
+                        refreshButtons.forEach(b => b.classList.remove('selected'));
+                        
+                        // Selecciona el botón actual
+                        btn.classList.add('selected');
+                        refrescoPrice = price;
+                    }
+
+                    // Actualiza el precio
+                    updatePrice(refrescoPrice);
+                });
+            });
+
+
+            // ---------------------------------
+            // 3. LÓGICA DE AGREGAR AL CARRITO (AJAX)
+            // ---------------------------------
+            btnAgregar.addEventListener('click', function(event) {
+                // Previene el comportamiento por defecto del enlace
+                event.preventDefault();
+
+                // Aquí obtenemos el precio del refresco seleccionado.
+                // IMPORTANTE: Dado que la lógica del servidor (app.py) espera solo el ID,
+                // este precio de refresco es solo para *fines visuales y de demo*.
+                // En una app real, el precio del refresco y su ID DEBERÍAN
+                // enviarse al servidor para ser incluidos como un ítem de línea.
                 
                 const productId = this.dataset.productId;
-                // La URL del nuevo endpoint de la API
                 const url = `/api/agregar/${productId}`;
 
                 // Usa la API Fetch para enviar una solicitud POST al servidor
@@ -64,7 +189,6 @@
                     return response.json();
                 })
                 .then(data => {
-                    // Revisa si la respuesta contiene la cantidad total
                     if (data.total_cantidad !== undefined) {
                         // Actualiza el número en el botón del carrito
                         cartCountSpan.textContent = data.total_cantidad;
@@ -79,4 +203,3 @@
     </script>
 </body>
 </html>
-
