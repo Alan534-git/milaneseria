@@ -22,56 +22,72 @@
                     <i class="fas fa-sun"></i>
                     <i class="fas fa-moon"></i>
                 </button>
-                <!-- Botón de Carrito -->
-                <a href="{{ url_for('carrito') }}" class="btn-carrito">
+                <!-- Botón del Carrito -->
+                <a href="/carrito" class="btn-carrito" aria-label="Ver carrito">
                     <i class="fas fa-shopping-cart"></i>
-                    <!-- CAMBIO: Eliminadas las llaves alrededor del contador del carrito -->
-                    <span id="cart-count" class="cart-badge">{{ carrito|length }}</span>
+                    Carrito 
+                    {% if cart_count > 0 %}
+                        <span id="cart-count" class="cart-badge">{{ cart_count }}</span>
+                    {% else %}
+                        <span id="cart-count" class="cart-badge" style="display: none;">0</span>
+                    {% endif %}
                 </a>
             </div>
         </header>
 
+        <h2>Nuestras Especialidades</h2>
+
         <div class="productos-container">
+            <!-- Bucle para mostrar los productos -->
             {% for p in productos %}
-                <div class="producto-card">
-                    <!-- Imagen de la milanesa -->
-                    <img src="{{ url_for('static', filename='img/' + p.imagen) }}" 
-                         alt="Milanesa {{ p.nombre }}" 
-                         class="producto-imagen"
-                         onerror="this.onerror=null; this.src='https://placehold.co/250x180/d6451e/ffffff?text=Milanesa';">
+                <div class="producto-card" data-product-id="{{ p.id }}">
+                    <img src="{{ url_for('static', filename='img/' + p.imagen) }}" alt="{{ p.nombre }}" class="producto-imagen" onerror="this.onerror=null; this.src='https://placehold.co/100x100/1e3a47/ffffff?text=M';">
+                    
+                    <h3 class="producto-nombre">{{ p.nombre }}</h3>
+                    <p class="precio-base">Precio Base: $<span data-base-price="{{ p.precio }}">{{ "%.2f"|format(p.precio) }}</span></p>
 
-                    <div class="producto-info">
-                        <h2 class="producto-nombre">{{ p.nombre }}</h2>
-                        <p class="precio-base">Precio Base: <span>${{ "%.2f"|format(p.precio) }}</span></p>
-
-                        <!-- Opciones de Refresco -->
-                        <div class="refresco-opciones">
-                            <h4>Elige tu Refresco (Opcional):</h4>
-                            <div class="refresco-buttons">
-                                <button class="btn-refresco selected" data-refresco-id="0" data-price="0.00" aria-label="Sin Refresco">
+                    <div class="opciones-producto">
+                        <!-- Selector de Cantidad - NUEVO CAMBIO -->
+                        <div class="selector-cantidad">
+                            <label for="cantidad-{{ p.id }}">Cantidad:</label>
+                            <input type="number" id="cantidad-{{ p.id }}" class="input-cantidad" value="1" min="1" max="99" data-product-id="{{ p.id }}">
+                        </div>
+                        
+                        <!-- Contenedor de Refrescos -->
+                        <div class="opciones-refresco">
+                            <p class="titulo-opciones">Elige tu Refresco (Opcional):</p>
+                            <div class="refresco-botones">
+                                <!-- Opción Sin Refresco -->
+                                <button class="btn-refresco" data-refresco-id="0" data-price="0.00" aria-label="Sin Refresco">
                                     <i class="fas fa-ban"></i>
-                                    <span class="tooltip-refresco">Sin Refresco: Gratis</span>
+                                    <span class="tooltip-refresco">Sin Refresco: $0.00</span>
                                 </button>
+                                <!-- Opción Coca-Cola -->
                                 <button class="btn-refresco" data-refresco-id="1" data-price="1.50" aria-label="Refresco Coca-Cola">
-                                    <img src="{{ url_for('static', filename='img/coca.webp') }}" alt="Coca-Cola" onerror="this.onerror=null; this.src='https://placehold.co/20x20/ef4444/ffffff?text=C';">
+                                    <img src="{{ url_for('static', filename='img/coca_cola.webp') }}" alt="Coca-Cola" onerror="this.onerror=null; this.src='https://placehold.co/20x20/dc2626/ffffff?text=C';">
                                     <span class="tooltip-refresco">Coca-Cola: $1.50</span>
                                 </button>
+                                <!-- Opción Pepsi -->
                                 <button class="btn-refresco" data-refresco-id="2" data-price="1.75" aria-label="Refresco Pepsi">
-                                    <img src="{{ url_for('static', filename='img/pepsi.webp') }}" alt="Pepsi" onerror="this.onerror=null; this.src='https://placehold.co/20x20/3b82f6/ffffff?text=P';">
+                                    <img src="{{ url_for('static', filename='img/pepsi.webp') }}" alt="Pepsi" onerror="this.onerror=null; this.src='https://placehold.co/20x20/2563eb/ffffff?text=P';">
                                     <span class="tooltip-refresco">Pepsi: $1.75</span>
                                 </button>
+                                <!-- Opción Sprite -->
                                 <button class="btn-refresco" data-refresco-id="3" data-price="1.25" aria-label="Refresco Sprite">
                                     <img src="{{ url_for('static', filename='img/sprite.webp') }}" alt="Sprite" onerror="this.onerror=null; this.src='https://placehold.co/20x20/10b981/ffffff?text=S';">
                                     <span class="tooltip-refresco">Sprite: $1.25</span>
                                 </button>
+                                <!-- Opción Fanta -->
                                 <button class="btn-refresco" data-refresco-id="4" data-price="1.60" aria-label="Refresco Fanta">
-                                    <img src="{{ url_for('static', filename='img/fanta.webp') }}" alt="Fanta" onerror="this.onerror=null; this.src='https://placehold.co/20x20/fb923c/ffffff?text=F';">
+                                    <img src="{{ url_for('static', filename='img/fanta.webp') }}" alt="Fanta" onerror="this.onerror=null; this.src='https://placehold.co/20x20/f97316/ffffff?text=F';">
                                     <span class="tooltip-refresco">Fanta: $1.60</span>
                                 </button>
+                                <!-- Opción 7Up -->
                                 <button class="btn-refresco" data-refresco-id="5" data-price="1.00" aria-label="Refresco 7Up">
                                     <img src="{{ url_for('static', filename='img/7up.webp') }}" alt="7Up" onerror="this.onerror=null; this.src='https://placehold.co/20x20/6b7280/ffffff?text=7';">
                                     <span class="tooltip-refresco">7Up: $1.00</span>
                                 </button>
+                                <!-- Opción Manaos -->
                                 <button class="btn-refresco" data-refresco-id="6" data-price="0.75" aria-label="Refresco Manaos">
                                     <img src="{{ url_for('static', filename='img/manaos.webp') }}" alt="Manaos" onerror="this.onerror=null; this.src='https://placehold.co/20x20/4f46e5/ffffff?text=M';">
                                     <span class="tooltip-refresco">Manaos: $0.75</span>
@@ -79,10 +95,10 @@
                             </div>
                         </div>
 
-                        <a href="/agregar/{{ p.id }}" class="btn-agregar" data-product-id="{{ p.id }}" data-refresco-price="0">
-                            <!-- CAMBIO: Eliminadas las llaves alrededor del precio inicial -->
-                            ➕ Agregar al carrito ($<span class="initial-price">{{ "%.2f"|format(p.precio) }}</span>)
-                        </a>
+                        <!-- Botón de Agregar al Carrito - Ahora un botón y no un <a> -->
+                        <button class="btn-agregar" data-product-id="{{ p.id }}" data-refresco-id="0" data-cantidad="1">
+                            ➕ Agregar <span class="cantidad-display">1</span> al carrito ($<span class="total-price">{{ "%.2f"|format(p.precio) }}</span>)
+                        </button>
                     </div>
                 </div>
             {% endfor %}

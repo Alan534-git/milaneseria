@@ -1,5 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, session, jsonify, request
 import os
+import uuid # Necesario para generar item_key únicas
 
 # NOTA: La clave secreta debe ser una cadena de bytes aleatoria en producción
 # Para Canvas, usamos un valor placeholder.
@@ -26,120 +27,143 @@ refresco_precios = {
     '5': 1.00,  # 7Up
     '6': 0.75   # Manaos
 }
-refresco_nombres = {
-    '0': 'Sin Refresco',
-    '1': 'Coca-Cola',
-    '2': 'Pepsi',
-    '3': 'Sprite',
-    '4': 'Fanta',
-    '5': '7Up',
-    '6': 'Manaos'
-}
 
-# Configuración de los datos del carrito
-# El carrito se almacena en la sesión del usuario como una lista de diccionarios:
-# [{"id": 1, "nombre": "Milanesa Napolitana", "precio": 25, "refresco_id": "1", "item_key": "..."}]
+def obtener_producto(producto_id):
+    """Busca un producto por ID."""
+    try:
+        pid = int(producto_id)
+        return next((p for p in productos if p["id"] == pid), None)
+    except ValueError:
+        return None
 
-# --- RUTA PRINCIPAL ---
+def calcular_totales(carrito):
+    """Calcula el subtotal y total del carrito."""
+    subtotal = 0
+    for item in carrito:
+        subtotal += item["precio_total"]
+    
+    # Simulación de impuestos y envío (simplemente un cargo fijo pequeño)
+    impuestos = subtotal * 0.10
+    envio = 5.00 if subtotal < 50 else 0.00
+    total = subtotal + impuestos + envio
+    
+    return subtotal, impuestos, envio, total
+
+
+# --- RUTA PRINCIPAL DE LA TIENDA ---
 @app.route("/")
 def index():
-    """Muestra la lista de productos y el conteo del carrito."""
-    total_cantidad = sum(item.get('cantidad', 1) for item in session.get('carrito', []))
+    """Muestra la lista de productos y el contador del carrito."""
+    carrito = session.get("carrito", [])
+    _, _, _, total = calcular_totales(carrito) # Se usa el total aquí para mostrar el botón de Carrito
     
-    # Renderizar la plantilla principal con los productos y el conteo del carrito
-    return render_template("index.html", productos=productos, total_cantidad=total_cantidad)
+    # Calcular la cantidad total de ítems en el carrito
+    cart_count = sum(item.get('cantidad', 1) for item in carrito)
+    
+    return render_template("index.html", productos=productos, cart_count=cart_count, cart_total=total)
 
-# --- RUTA DEL CARRITO ---
+# --- RUTA DE CARRITO ---
 @app.route("/carrito")
 def carrito():
     """Muestra el contenido del carrito."""
     carrito = session.get("carrito", [])
-    total_precio = 0.0
+    subtotal, impuestos, envio, total = calcular_totales(carrito)
     
-    # Lógica para recalcular y enriquecer los datos del carrito para la plantilla
-    # Esto asegura que todas las claves requeridas por la plantilla (carrito.html) existan.
-    for item in carrito:
-        milanesa_precio = item.get('precio', 0.0)
-        refresco_id = item.get('refresco_id', '0')
-        refresco_precio = refresco_precios.get(refresco_id, 0.0)
+    return render_template("carrito.html", 
+                           carrito=carrito, 
+                           subtotal=subtotal, 
+                           impuestos=impuestos, 
+                           envio=envio, 
+                           total=total)
 
-        # 1. Asegura que precio_total exista
-        item['precio_total'] = milanesa_precio + refresco_precio
-        
-        # 2. Asegura que refresco_nombre exista
-        item['refresco_nombre'] = refresco_nombres.get(refresco_id, 'Desconocido')
-        
-        # 3. Asegura que item_key exista (debería existir si se agregó correctamente)
-        if 'item_key' not in item:
-             # Si falta la clave, le asignamos una por seguridad (aunque debería venir del agregar)
-            import uuid
-            item['item_key'] = str(uuid.uuid4())
+# --- NUEVA RUTA PARA AGREGAR PRODUCTOS (POST) ---
+@app.route("/agregar", methods=["POST"])
+def agregar_producto():
+    """
+    Agrega uno o varios ítems de un producto con refresco al carrito.
+    Recibe los datos vía POST/JSON.
+    """
+    data = request.get_json()
+    if not data or 'product_id' not in data or 'refresco_id' not in data or 'cantidad' not in data:
+        return jsonify({'success': False, 'message': 'Datos inválidos.'}), 400
 
-        total_precio += item['precio_total']
+    producto_id = data.get('product_id')
+    refresco_id = str(data.get('refresco_id'))
+    try:
+        cantidad = int(data.get('cantidad'))
+    except ValueError:
+        return jsonify({'success': False, 'message': 'Cantidad inválida.'}), 400
 
-    # Renderizar la plantilla del carrito con el carrito y el total
-    return render_template("carrito.html", carrito=carrito, total=total_precio)
+    if cantidad <= 0:
+        return jsonify({'success': False, 'message': 'La cantidad debe ser mayor a cero.'}), 400
 
-# --- RUTA PARA AGREGAR AL CARRITO (AJAX/Fetch) ---
-@app.route("/agregar/<int:producto_id>", methods=['GET', 'POST'])
-def agregar(producto_id):
-    """Agrega un producto con un refresco al carrito."""
+    producto = obtener_producto(producto_id)
+    if not producto:
+        return jsonify({'success': False, 'message': 'Producto no encontrado.'}), 404
+
+    # Obtener el precio del refresco
+    precio_refresco = refresco_precios.get(refresco_id, 0.00)
     
-    # Encuentra el producto base
-    producto_base = next((p for p in productos if p['id'] == producto_id), None)
-
-    if not producto_base:
-        return jsonify({'success': False, 'message': 'Producto no encontrado'}), 404
-
-    # Determina el ID del refresco. Por defecto, '0' (Sin Refresco)
-    # En la práctica, esto debería venir del POST request, pero se asume un valor por defecto seguro.
-    refresco_id = request.args.get('refresco_id', '0')
+    # Calcular el precio unitario total
+    precio_unitario_total = producto["precio"] + precio_refresco
     
-    # Obtener nombre y precio del refresco
-    refresco_nombre = refresco_nombres.get(refresco_id, 'Sin Refresco')
-    refresco_precio = refresco_precios.get(refresco_id, 0.0)
-
-    # Crear la clave única para este ítem combinado (Milanesa + Refresco)
-    import uuid
-    item_key = str(uuid.uuid4())
-
-    # Crear el nuevo ítem del carrito
-    nuevo_item = {
-        'id': producto_base['id'],
-        'nombre': producto_base['nombre'],
-        # *** IMPORTANTE: Usamos url_for para generar la ruta correcta para el carrito.html ***
-        'imagen': url_for('static', filename=f'img/{producto_base["imagen"]}'),
-        'precio': producto_base['precio'], # Precio base de la milanesa
-        'refresco_id': refresco_id,
-        'refresco_nombre': refresco_nombre,
-        'precio_total': producto_base['precio'] + refresco_precio,
-        'item_key': item_key
+    # Construir el nombre del refresco para el carrito
+    nombre_refresco_map = {
+        '0': "Sin Refresco", '1': "Coca-Cola", '2': "Pepsi", 
+        '3': "Sprite", '4': "Fanta", '5': "7Up", '6': "Manaos"
     }
-    
-    # Agregar a la sesión
-    carrito = session.get('carrito', [])
-    carrito.append(nuevo_item)
-    session['carrito'] = carrito
+    nombre_refresco = nombre_refresco_map.get(refresco_id, "Refresco Desconocido")
+
+    # Obtener o inicializar el carrito
+    carrito = session.get("carrito", [])
+
+    # Crear el ítem del carrito
+    for _ in range(cantidad):
+        item = {
+            "item_key": str(uuid.uuid4()), # ID única para eliminar/identificar el ítem
+            "id": producto["id"],
+            "nombre": producto["nombre"],
+            "precio_base": producto["precio"], # Precio solo de la milanesa
+            "refresco_id": refresco_id,
+            "nombre_refresco": nombre_refresco,
+            "precio_refresco": precio_refresco,
+            "precio_total": precio_unitario_total,
+            "imagen": producto["imagen"],
+            # Nota: La cantidad es 1 aquí porque se agregan N ítems separados.
+            # En la versión anterior con cantidades, se modificaría un solo ítem. 
+            # Para simplificar la eliminación de un solo ítem, cada unidad se agrega separadamente.
+            "cantidad": 1 
+        }
+        carrito.append(item)
+
+    session["carrito"] = carrito
     session.modified = True
 
-    # Calcular la nueva cantidad total para actualizar el ícono del carrito
-    total_cantidad = len(carrito)
-    
-    # La respuesta para llamadas asíncronas (desde index.js)
-    return jsonify({'success': True, 'total_cantidad': total_cantidad})
+    # Calcular el nuevo conteo del carrito
+    cart_count = sum(item.get('cantidad', 1) for item in carrito)
 
-# --- RUTA PARA VACIAR EL CARRITO ---
+    return jsonify({'success': True, 'message': 'Producto(s) agregado(s) al carrito', 'cart_count': cart_count})
+
+
+# --- RUTA PARA VACIAR CARRITO ---
 @app.route("/vaciar")
 def vaciar():
-    """Vacía completamente el carrito."""
+    """Vacía completamente el carrito de compras."""
     session.pop("carrito", None)
     session.modified = True
     return redirect(url_for("carrito"))
 
-# --- RUTA PARA SIMULAR EL PAGO ---
-@app.route("/api/procesar_pago", methods=['POST'])
-def api_procesar_pago():
-    """Simula el procesamiento de un pago y vacía el carrito."""
+# --- RUTA DE API PARA PROCESAR PAGO ---
+@app.route("/api/pagar", methods=["POST"])
+def procesar_pago():
+    """Simula el procesamiento del pago."""
+    # En una aplicación real, aquí se procesarían los datos de la tarjeta.
+    
+    # Validar que los datos POST (simulados por el JSON) no estén vacíos
+    data = request.get_json()
+    if not data or not all(key in data for key in ['nombre', 'tarjeta', 'expiracion', 'cvv']):
+        # Simular fallo si faltan datos
+        return jsonify({'success': False, 'message': 'Faltan datos de pago requeridos.'}), 400
     
     # Simulamos un pago exitoso vaciando el carrito
     if "carrito" in session and session["carrito"]:
@@ -171,6 +195,8 @@ def eliminar(item_key):
     return redirect(url_for("carrito"))
 
 if __name__ == '__main__':
-    # Usar un puerto diferente para evitar conflictos con XAMPP si está corriendo en 80/443
-    # Y asegurar que la sesión funciona correctamente en el entorno de desarrollo
-    app.run(debug=True, port=5000)
+    # La aplicación Flask se ejecutará en un puerto disponible
+    # En un entorno real, se usaría un servidor WSGI como Gunicorn.
+    port = int(os.environ.get("PORT", 5000))
+    # Para el entorno de Canvas, es mejor no usar debug=True para evitar problemas de recarga.
+    app.run(host='0.0.0.0', port=port)
