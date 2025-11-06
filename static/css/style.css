@@ -22,156 +22,158 @@
     --color-dark-mode-icon: var(--color-accent-secondary); /* Icono de sol/luna */
 }
 
-/* ---------------------------------- */
-/* MODO OSCURO */
-/* ---------------------------------- */
+/* Modo Oscuro */
 body.dark-mode {
-    --color-bg-body: #1f2937; /* Fondo oscuro */
-    --color-bg-container: #374151; /* Fondo de tarjeta más claro */
-    --color-text-primary: #f3f4f6; /* Texto principal (Gris muy claro) */
-    --color-text-secondary: #d1d5db; /* Texto secundario */
-    --color-border: #4b5563; /* Borde oscuro */
-    --color-shadow: rgba(0, 0, 0, 0.4); /* Sombra fuerte en oscuro */
-
-    --color-accent-main: #f59e0b; /* Acento más brillante en oscuro (Ámbar) */
-    --color-accent-hover: #d97706; 
-    --color-accent-secondary: #e0e0e0;
+    --color-bg-body: #111827;
+    --color-bg-container: #1f2937;
+    --color-text-primary: #f3f4f6;
+    --color-text-secondary: #9ca3af;
+    --color-border: #374151;
+    --color-shadow: rgba(0, 0, 0, 0.3);
+    
+    --color-accent-main: #ff6f40; /* Naranja más brillante para dark mode */
+    --color-accent-hover: #e06037;
+    --color-accent-secondary: #60a5fa; /* Azul claro para títulos/destacados */
     
     --color-btn-default-bg: #4b5563;
     --color-btn-default-hover: #6b7280;
     
-    --color-dark-mode-icon: var(--color-accent-main);
+    --color-dark-mode-icon: #f3f4f6;
 }
 
 
 /* ---------------------------------- */
-/* ESTILOS BASE */
+/* BASE / RESETS */
 /* ---------------------------------- */
 * {
     box-sizing: border-box;
 }
 
 body {
-    font-family: 'Inter', 'Roboto', 'Helvetica Neue', Arial, sans-serif; /* Fuente moderna */
-    background-color: var(--color-bg-body);
-    color: var(--color-text-primary);
+    font-family: 'Inter', sans-serif;
     margin: 0;
     padding: 0;
-    line-height: 1.6;
+    background-color: var(--color-bg-body);
+    color: var(--color-text-primary);
     transition: background-color 0.3s, color 0.3s;
+    line-height: 1.6;
 }
 
+/* Contenedor principal para centrar contenido */
 .container {
-    max-width: 1200px; /* Hacemos el contenedor un poco más ancho */
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
 }
 
-/* Encabezados */
-h1, h2 {
-    color: var(--color-accent-secondary);
-    margin-top: 0;
-    font-weight: 700;
-}
-
-h1 {
-    font-size: 2.5rem;
-}
-
-h2 {
-    font-size: 1.8rem;
-    margin-bottom: 20px;
-}
-
 /* ---------------------------------- */
-/* HEADER GLOBAL Y NAVEGACIÓN */
+/* UTILIDADES GENERALES */
 /* ---------------------------------- */
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 0;
-    margin-bottom: 30px;
-    border-bottom: 1px solid var(--color-border);
+
+/* Definición de la propiedad 'appearance' para compatibilidad (no estándar) */
+/* El usuario solicitó definir esta propiedad. Se incluye con prefijos por compatibilidad con Gecko/WebKit. */
+.compat-appearance {
+    -webkit-appearance: none;
+    -moz-appearance: none; /* Gecko */
+    appearance: none; /* W3C, aunque es no estándar */
 }
 
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 15px;
+/* Estilo para los inputs de tipo number (ocultar flechas en navegadores) */
+/* Se utiliza la clase .compat-appearance para aplicar el estilo */
+input[type="number"].input-cantidad {
+    -webkit-appearance: textfield; /* Mostrar en Safari/Chrome */
+    -moz-appearance: textfield;   /* Mostrar en Firefox */
+    appearance: textfield;
+    text-align: center;
 }
 
-/* Botón de tema */
-.theme-switch-container {
-    display: flex;
-    align-items: center;
-}
-
-#theme-toggle {
-    background: none;
-    border: 2px solid var(--color-dark-mode-icon); /* Borde visible */
-    cursor: pointer;
-    font-size: 1.2rem;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    transition: background-color 0.3s, transform 0.2s, border-color 0.3s;
-    line-height: 1;
-    color: var(--color-dark-mode-icon);
+/* Estilo del Badge del Carrito */
+.cart-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    min-width: 20px;
+    height: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
+    background-color: var(--color-accent-main);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 50%;
+    padding: 2px;
+    line-height: 1;
+}
+
+/* Estilo para el botón de cambio de tema */
+#theme-toggle {
+    background: var(--color-bg-container);
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s, transform 0.1s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    box-shadow: 0 2px 5px var(--color-shadow);
 }
 
 #theme-toggle:hover {
-    background-color: var(--color-border);
-    transform: scale(1.05);
-}
-
-/* Estilo para el ícono de sol/luna */
-#theme-toggle .fa-sun,
-#theme-toggle .fa-moon {
-    pointer-events: none;
-    position: absolute;
-    transition: opacity 0.3s;
-}
-
-/* Ocultar el sol en dark-mode y la luna en light-mode */
-body.dark-mode .fa-sun {
-    opacity: 0;
-}
-
-body:not(.dark-mode) .fa-moon {
-    opacity: 0;
-}
-
-
-/* Botón de Carrito (en index.html) */
-.btn-carrito {
-    text-decoration: none;
-    padding: 10px 18px;
-    background-color: var(--color-accent-main);
-    color: white;
-    border-radius: 6px;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: background-color 0.3s, transform 0.1s;
-    box-shadow: 0 4px 6px -1px var(--color-shadow);
-}
-
-.btn-carrito:hover {
-    background-color: var(--color-accent-hover);
     transform: translateY(-1px);
 }
 
-#cart-count {
-    background-color: rgba(255, 255, 255, 0.3);
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.9em;
-    font-weight: 700;
+#theme-toggle i {
+    font-size: 1.2rem;
+    position: absolute;
+    transition: opacity 0.3s, transform 0.3s;
+    color: var(--color-dark-mode-icon);
+}
+
+/* Mostrar el Sol por defecto (Modo Claro) */
+#theme-toggle .fa-moon {
+    opacity: 0;
+    transform: rotate(30deg);
+}
+
+/* Mostrar la Luna en Modo Oscuro */
+body.dark-mode #theme-toggle .fa-sun {
+    opacity: 0;
+    transform: rotate(-30deg);
+}
+
+body.dark-mode #theme-toggle .fa-moon {
+    opacity: 1;
+    transform: rotate(0deg);
+}
+
+/* Botón del Carrito en la Cabecera */
+.btn-carrito {
+    position: relative;
+    background-color: var(--color-bg-container);
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--color-text-primary);
+    text-decoration: none;
+    margin-left: 15px;
+    transition: background-color 0.3s, border-color 0.3s, transform 0.1s;
+    box-shadow: 0 2px 5px var(--color-shadow);
+}
+
+.btn-carrito:hover {
+    transform: scale(1.05);
+}
+
+.btn-carrito i {
+    font-size: 1.2rem;
 }
 
 
@@ -212,27 +214,47 @@ hr {
     background-color: #c82333;
 }
 
+
 /* ---------------------------------- */
-/* RESPONSIVIDAD BÁSICA */
+/* DIÁLOGO FLOTANTE GENERAL (index.html) */
 /* ---------------------------------- */
-@media (max-width: 768px) {
-    h1 {
-        font-size: 2rem;
-    }
-    h2 {
-        font-size: 1.5rem;
-    }
-    header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    .header-right {
-        margin-top: 10px;
-        width: 100%;
-        justify-content: space-between;
-    }
-    .btn-carrito {
-        flex-grow: 1;
-        justify-content: center;
-    }
+.floating-message-dialog {
+    position: fixed;
+    top: -100px; /* Inicialmente fuera de la pantalla */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    padding: 15px;
+    font-size: 1em;
+    font-weight: 600;
+    z-index: 1000;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: top 0.4s ease-out, opacity 0.4s ease-out;
+    opacity: 0;
 }
+
+.floating-message-dialog.show {
+    top: 20px; /* Deslizar hacia abajo */
+    opacity: 1;
+}
+
+.floating-message-dialog.success {
+    background-color: #d4edda; /* Verde claro */
+    color: #155724; /* Verde oscuro */
+}
+
+.floating-message-dialog.error {
+    background-color: #f8d7da; /* Rojo claro */
+    color: #721c24; /* Rojo oscuro */
+}
+
+.floating-message-dialog.warning {
+    background-color: #fff3cd; /* Amarillo claro */
+    color: #856404; /* Amarillo oscuro */
+}
+
+.hidden { display: none; }
+.flex { display: flex; }

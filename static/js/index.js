@@ -8,6 +8,10 @@ const refrescoData = {
     '6': 0.75  // Manaos (nuevo)
 };
 
+// --- NUEVA RESTRICCIÓN DE CANTIDAD ---
+const MAX_QUANTITY = 20;
+// -----------------------------------
+
 /**
  * CAMBIO: Función para calcular el precio total.
  * Ahora usa la cantidad de milanesas y la cantidad de refrescos por separado.
@@ -18,191 +22,276 @@ function updateTotalPrice(card) {
     const refrescoPrice = parseFloat(selectedRefrescoBtn.dataset.price);
     
     // Leer las dos cantidades
-    const cantMilanesa = parseInt(card.querySelector('.input-cantidad-milanesa').value);
-    const cantRefresco = parseInt(card.querySelector('.input-cantidad-refresco').value);
+    const cantMilanesaInput = card.querySelector('.input-cantidad-milanesa');
+    const cantRefrescoInput = card.querySelector('.input-cantidad-refresco');
 
-    // Validar que las cantidades sean números válidos
-    const validCantMilanesa = (isNaN(cantMilanesa) || cantMilanesa < 1) ? 1 : cantMilanesa;
-    const validCantRefresco = (isNaN(cantRefresco) || cantRefresco < 0) ? 0 : cantRefresco;
+    let cantMilanesa = parseInt(cantMilanesaInput.value);
+    let cantRefresco = parseInt(cantRefrescoInput.value);
 
-    // Si el refresco seleccionado es "Sin Refresco", forzar la cantidad de refresco a 0
-    const finalCantRefresco = selectedRefrescoBtn.dataset.refrescoId === '0' ? 0 : validCantRefresco;
-    
-    // Si la cantidad de refresco es 0, el precio del refresco es 0
-    const finalRefrescoPrice = finalCantRefresco === 0 ? 0.00 : refrescoPrice;
+    // Validar y limitar la cantidad de milanesas
+    if (isNaN(cantMilanesa) || cantMilanesa < 1) {
+        cantMilanesa = 1;
+        cantMilanesaInput.value = 1;
+    } else if (cantMilanesa > MAX_QUANTITY) {
+        cantMilanesa = MAX_QUANTITY;
+        cantMilanesaInput.value = MAX_QUANTITY;
+        showFloatingMessage(`Milanesas limitadas a ${MAX_QUANTITY} por ítem.`, 'warning');
+    }
 
-    // Calcular el precio total
-    const totalPrice = (basePrice * validCantMilanesa) + (finalRefrescoPrice * finalCantRefresco);
+    // Validar y limitar la cantidad de refrescos
+    if (isNaN(cantRefresco) || cantRefresco < 0) {
+        cantRefresco = 0;
+        cantRefrescoInput.value = 0;
+    } else if (cantRefresco > MAX_QUANTITY) {
+        cantRefresco = MAX_QUANTITY;
+        cantRefrescoInput.value = MAX_QUANTITY;
+        showFloatingMessage(`Refrescos limitados a ${MAX_QUANTITY} por ítem.`, 'warning');
+    }
 
-    // Actualiza el botón (solo si es 'btn-agregar', si es 'btn-cancelar' no toca el texto)
-    const btnAccion = card.querySelector('.btn-accion-card');
-    
-    if (btnAccion.classList.contains('btn-agregar')) {
-        const priceSpan = btnAccion.querySelector('.total-price');
-        
-        // Almacena los IDs y las cantidades en los dataset del botón para el envío
-        btnAccion.dataset.refrescoId = selectedRefrescoBtn.dataset.refrescoId;
-        btnAccion.dataset.cantidadMilanesa = validCantMilanesa;
-        btnAccion.dataset.cantidadRefresco = finalCantRefresco;
+    // Si el refresco seleccionado es "Sin Refresco" (id 0), la cantidad de refresco debe ser 0
+    const refrescoId = parseInt(selectedRefrescoBtn.dataset.refrescoId);
+    if (refrescoId === 0) {
+        cantRefresco = 0;
+        cantRefrescoInput.value = 0;
+    }
 
-        // Actualiza el precio en el texto del botón
-        priceSpan.textContent = totalPrice.toFixed(2);
+    // Calcular el subtotal
+    const milanesaTotal = basePrice * cantMilanesa;
+    const refrescoTotal = refrescoPrice * cantRefresco;
+    const total = milanesaTotal + refrescoTotal;
+
+    // Actualizar el botón de "Agregar al Carrito"
+    const btnAgregar = card.querySelector('.btn-agregar');
+    if (btnAgregar) {
+        btnAgregar.querySelector('.total-price').textContent = total.toFixed(2);
+        btnAgregar.dataset.cantidadMilanesa = cantMilanesa;
+        btnAgregar.dataset.cantidadRefresco = cantRefresco;
     }
 }
 
-// Función para actualizar el contador del carrito en el header
-function updateCartCount(newCount) {
-    const cartCountSpan = document.getElementById('cart-count');
-    if (cartCountSpan) {
-        cartCountSpan.textContent = newCount;
-        // Muestra u oculta el badge
-        cartCountSpan.style.display = newCount > 0 ? 'inline-block' : 'none';
-    }
-}
+/**
+ * Muestra un mensaje flotante de éxito/error/advertencia.
+ */
+function showFloatingMessage(message, type = 'success') {
+    const dialog = document.getElementById('floating-message-dialog');
+    if (!dialog) return;
 
-// Función para mostrar un feedback temporal en el botón
-function setButtonFeedback(button, text, isError = false) {
-    const originalHTML = button.innerHTML;
-    const originalClasses = button.className;
-    
-    button.disabled = true;
-    button.innerHTML = text;
-    if (isError) {
-        button.classList.add('btn-cancelar'); // Reusamos el estilo gris/rojo
-    }
+    dialog.textContent = message;
+    // Limpia clases anteriores
+    dialog.classList.remove('show', 'success', 'error', 'warning');
+    dialog.classList.add(type);
 
+    // Muestra el diálogo
+    requestAnimationFrame(() => {
+        dialog.classList.add('show');
+    });
+
+    // Oculta el diálogo después de 3 segundos
     setTimeout(() => {
-        button.disabled = false;
-        button.innerHTML = originalHTML;
-        button.className = originalClasses;
-        
-        // Si falló, debemos recalcular el precio para restaurar el botón
-        if (isError) {
-            const card = button.closest('.producto-card');
-            if (card) {
-                updateTotalPrice(card);
-            }
-        }
-    }, 1000);
+        dialog.classList.remove('show');
+    }, 3000);
 }
 
-// CAMBIO: Nueva función para manejar el clic en "Agregar"
-async function handleAgregar(button) {
-    const card = button.closest('.producto-card');
-    const productId = button.dataset.productId;
-    const refrescoId = button.dataset.refrescoId;
-    const cantidadMilanesa = button.dataset.cantidadMilanesa;
-    const cantidadRefresco = button.dataset.cantidadRefresco;
+/**
+ * Maneja la selección del tipo de refresco.
+ */
+function handleRefrescoSelection(card, selectedBtn) {
+    // 1. Deseleccionar el botón anterior
+    card.querySelectorAll('.btn-refresco').forEach(btn => {
+        btn.classList.remove('selected');
+    });
 
-    button.disabled = true;
-    button.innerHTML = 'Agregando...';
+    // 2. Seleccionar el nuevo botón
+    selectedBtn.classList.add('selected');
 
-    // Crear el objeto de datos a enviar
-    const postData = {
-        product_id: productId,
-        refresco_id: refrescoId,
-        cantidad_milanesa: cantidadMilanesa,
-        cantidad_refresco: cantidadRefresco
-    };
+    // 3. Obtener los elementos de cantidad de refresco
+    const inputRefresco = card.querySelector('.input-cantidad-refresco');
+    const controlRefresco = card.querySelector('.cantidad-control-refresco');
+    const refrescoId = parseInt(selectedBtn.dataset.refrescoId);
+
+    // 4. Actualizar estado de cantidad de refresco
+    if (refrescoId === 0) {
+        // Si es "Sin Refresco" (ID 0), la cantidad debe ser 0 y se deshabilita el control
+        inputRefresco.value = 0;
+        controlRefresco.classList.add('disabled');
+        inputRefresco.disabled = true;
+    } else {
+        // Si es un refresco real, habilitar y asegurar que la cantidad sea al menos 1
+        inputRefresco.disabled = false;
+        controlRefresco.classList.remove('disabled');
+        if (parseInt(inputRefresco.value) === 0) {
+            inputRefresco.value = 1; // Asume 1 por defecto al seleccionar un refresco
+        }
+    }
+
+    // 5. Actualizar precio total
+    updateTotalPrice(card);
+}
+
+/**
+ * Función para manejar la acción de "Agregar al Carrito".
+ */
+async function handleAgregar(btnAgregar) {
+    const card = btnAgregar.closest('.producto-card');
+    const productId = btnAgregar.dataset.productId;
+    const refrescoId = card.querySelector('.btn-refresco.selected').dataset.refrescoId;
+
+    const cantMilanesa = parseInt(btnAgregar.dataset.cantidadMilanesa);
+    const cantRefresco = parseInt(btnAgregar.dataset.cantidadRefresco);
+    
+    // Validar en el cliente (doble chequeo)
+    if (cantMilanesa < 1 || cantMilanesa > MAX_QUANTITY) {
+        showFloatingMessage(`La cantidad de Milanesas debe estar entre 1 y ${MAX_QUANTITY}.`, 'error');
+        return;
+    }
+    if (refrescoId != 0 && (cantRefresco < 1 || cantRefresco > MAX_QUANTITY)) {
+        showFloatingMessage(`La cantidad de Refrescos debe estar entre 1 y ${MAX_QUANTITY}.`, 'error');
+        return;
+    }
+
+    // Deshabilitar el botón temporalmente
+    const originalText = btnAgregar.innerHTML;
+    btnAgregar.disabled = true;
+    btnAgregar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Agregando...';
+
+    const itemKey = crypto.randomUUID(); // Generamos una clave única para la UI
 
     try {
-        const response = await fetch('/agregar', {
+        const response = await fetch('/api/agregar', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(postData),
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                product_id: productId,
+                refresco_id: refrescoId,
+                cant_milanesa: cantMilanesa,
+                cant_refresco: cantRefresco,
+                item_key: itemKey // Enviamos la clave única para referencia (aunque el servidor generará la suya)
+            })
         });
 
-        if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.message || 'Error al agregar.');
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            // Éxito:
+            showFloatingMessage('✅ ¡Agregado al Carrito!', 'success');
+            updateCartIcon(data.cart_count);
+
+            // Transicionar el botón a "Cancelar"
+            btnAgregar.classList.remove('btn-agregar');
+            btnAgregar.classList.add('btn-cancelar');
+            btnAgregar.innerHTML = `❌ Cancelar Último Ítem ($${btnAgregar.querySelector('.total-price').textContent})`;
+            
+            // Guardar la clave del ítem temporalmente para la cancelación
+            btnAgregar.dataset.itemKey = itemKey;
+            
+            // Revertir a "Agregar" después de 5 segundos
+            setTimeout(() => {
+                // Solo si el botón sigue en modo "Cancelar"
+                if (btnAgregar.classList.contains('btn-cancelar') && btnAgregar.dataset.itemKey === itemKey) {
+                    btnAgregar.classList.remove('btn-cancelar');
+                    btnAgregar.classList.add('btn-agregar');
+                    btnAgregar.innerHTML = originalText;
+                    delete btnAgregar.dataset.itemKey;
+                }
+                btnAgregar.disabled = false;
+            }, 5000); 
+
+        } else {
+            // Error de validación o del servidor
+            showFloatingMessage(`❌ Error: ${data.message || 'Error desconocido al agregar.'}`, 'error');
+            btnAgregar.innerHTML = originalText;
         }
 
-        const data = await response.json();
-        
-        // Éxito:
-        updateCartCount(data.cart_count);
-
-        // Transformar en botón de "Cancelar"
-        button.innerHTML = '✅ Agregado (Cancelar)';
-        button.classList.remove('btn-agregar');
-        button.classList.add('btn-cancelar');
-        button.dataset.itemKey = data.item_key; // Guardamos el ID del item creado
-        button.disabled = false;
-
     } catch (error) {
-        console.error('Hubo un problema con la operación de fetch:', error);
-        // Mostrar error y restaurar
-        button.disabled = false;
-        button.innerHTML = '❌ Error';
-        setTimeout(() => {
-             if (card) {
-                // Restaura el botón al estado original
-                button.innerHTML = `➕ Agregar al carrito ($<span class="total-price">0.00</span>)`;
-                updateTotalPrice(card);
-             }
-        }, 1000);
+        console.error('Error de red:', error);
+        showFloatingMessage('🚨 Error de conexión al servidor.', 'error');
+    } finally {
+        // Si no se revirtió a "Agregar" automáticamente, lo reactivamos.
+        if (btnAgregar.classList.contains('btn-agregar')) {
+             btnAgregar.disabled = false;
+        }
     }
 }
 
-// CAMBIO: Nueva función para manejar el clic en "Cancelar"
-async function handleCancelar(button) {
-    const card = button.closest('.producto-card');
-    const itemKey = button.dataset.itemKey;
 
-    if (!itemKey) return;
+/**
+ * Función para manejar la acción de "Cancelar Último Ítem" (solo en la tienda).
+ */
+async function handleCancelar(btnCancel) {
+    const itemKey = btnCancel.dataset.itemKey;
 
-    button.disabled = true;
-    button.innerHTML = 'Cancelando...';
+    if (!itemKey) {
+        showFloatingMessage('Error: No hay ítem a cancelar.', 'error');
+        return;
+    }
+
+    // Deshabilitar el botón temporalmente
+    const originalText = btnCancel.innerHTML;
+    btnCancel.disabled = true;
+    btnCancel.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelando...';
 
     try {
-        // Usamos la nueva API para eliminar
         const response = await fetch('/api/eliminar', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ item_key: itemKey }),
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ item_key: itemKey })
         });
-
-        if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.message || 'Error al cancelar.');
-        }
 
         const data = await response.json();
 
-        // Éxito:
-        updateCartCount(data.cart_count);
+        if (response.ok && data.success) {
+            // Éxito:
+            showFloatingMessage('🗑️ Ítem cancelado.', 'warning');
+            updateCartIcon(data.cart_count);
 
-        // Restaurar el botón a "Agregar"
-        button.innerHTML = `➕ Agregar al carrito ($<span class="total-price">0.00</span>)`; // Texto base
-        button.classList.remove('btn-cancelar');
-        button.classList.add('btn-agregar');
-        delete button.dataset.itemKey; // Limpiamos el ID
-        button.disabled = false;
-        
-        // Recalculamos el precio para el botón
-        if (card) {
-            updateTotalPrice(card);
+            // Revertir el botón a "Agregar"
+            const originalPriceSpan = btnCancel.querySelector('.total-price');
+            const originalPrice = originalPriceSpan ? originalPriceSpan.textContent : '0.00';
+            
+            btnCancel.classList.remove('btn-cancelar');
+            btnCancel.classList.add('btn-agregar');
+            btnCancel.innerHTML = `➕ Agregar al carrito ($<span class="total-price">${originalPrice}</span>)`;
+            
+            delete btnCancel.dataset.itemKey;
+
+        } else {
+            // Error de validación o del servidor
+            showFloatingMessage(`❌ Error al cancelar: ${data.message || 'Error desconocido.'}`, 'error');
+            btnCancel.innerHTML = originalText;
         }
 
     } catch (error) {
-        console.error('Hubo un problema con la operación de fetch:', error);
-        // Mostrar error y restaurar
-        button.disabled = false;
-        button.innerHTML = '❌ Error'; // Mantenemos el estado de "Cancelar" si falla
-        setTimeout(() => {
-            button.innerHTML = '✅ Agregado (Cancelar)';
-            button.disabled = false;
-        }, 1000);
+        console.error('Error de red:', error);
+        showFloatingMessage('🚨 Error de conexión al servidor.', 'error');
+    } finally {
+        btnCancel.disabled = false;
+    }
+}
+
+
+/**
+ * Actualiza el contador del carrito en la cabecera.
+ */
+function updateCartIcon(count) {
+    const cartCountElement = document.getElementById('cart-count');
+    if (cartCountElement) {
+        cartCountElement.textContent = count;
+        cartCountElement.style.display = count > 0 ? 'flex' : 'none';
     }
 }
 
 
 document.addEventListener('DOMContentLoaded', function() {
-    const themeToggle = document.getElementById('theme-toggle');
-
     // ---------------------------------
     // 1. LÓGICA DE MODO CLARO/OSCURO
     // ---------------------------------
+    const themeToggle = document.getElementById('theme-toggle');
+    
+    // Obtiene el tema almacenado o usa el del sistema por defecto
     const storedTheme = localStorage.getItem('theme');
     if (storedTheme) {
         document.body.classList.toggle('dark-mode', storedTheme === 'dark');
@@ -218,64 +307,97 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ---------------------------------
-    // 2. LÓGICA DE SELECCIÓN DE REFRESCO
-    // ---------------------------------
-    document.querySelectorAll('.refresco-botones').forEach(container => {
-        container.addEventListener('click', (event) => {
-            const btn = event.target.closest('.btn-refresco');
-            if (btn) {
-                container.querySelectorAll('.btn-refresco').forEach(b => b.classList.remove('selected'));
-                btn.classList.add('selected');
-                
-                const card = btn.closest('.producto-card');
-                if (card) {
-                    const inputRefresco = card.querySelector('.input-cantidad-refresco');
-                    // Si eligen "Sin Refresco", pone la cantidad de refresco a 0
-                    if (btn.dataset.refrescoId === '0') {
-                        inputRefresco.value = 0;
-                    } else if (inputRefresco.value === '0') {
-                        // Si eligen un refresco y la cantidad era 0, la pone a 1
-                        inputRefresco.value = 1;
-                    }
-                    updateTotalPrice(card);
-                }
-            }
-        });
-    });
 
     // ---------------------------------
-    // 3. LÓGICA DE CAMBIO DE CANTIDAD
+    // 2. LÓGICA DE SELECCIÓN DE REFRESCO Y CANTIDAD
     // ---------------------------------
-    // CAMBIO: Ahora escucha a los dos inputs
-    document.querySelectorAll('.input-cantidad').forEach(input => {
-        input.addEventListener('change', (event) => {
-            const card = input.closest('.producto-card');
+
+    document.querySelectorAll('.producto-card').forEach(card => {
+        
+        // Listener para los botones de Refresco
+        card.querySelectorAll('.btn-refresco').forEach(btn => {
+            btn.addEventListener('click', () => {
+                handleRefrescoSelection(card, btn);
+            });
+        });
+        
+        // Listener para los botones de AUMENTAR/DISMINUIR cantidad de MILANESA
+        card.querySelector('.cantidad-control-milanesa').addEventListener('click', (event) => {
+            const btn = event.target.closest('button');
+            const input = card.querySelector('.input-cantidad-milanesa');
             
-            // Si cambian la cantidad de refresco a 0, selecciona "Sin Refresco"
-            if (input.classList.contains('input-cantidad-refresco') && input.value === '0') {
-                card.querySelectorAll('.btn-refresco').forEach(b => b.classList.remove('selected'));
-                card.querySelector('.btn-refresco[data-refresco-id="0"]').classList.add('selected');
-            }
-            // Si cambian la cantidad de refresco a > 0 y estaba "Sin Refresco"
-            else if (input.classList.contains('input-cantidad-refresco') && input.value > '0') {
-                const selectedBtn = card.querySelector('.btn-refresco.selected');
-                if (selectedBtn && selectedBtn.dataset.refrescoId === '0') {
-                    // Selecciona el primer refresco real (ej. Coca-Cola)
-                    selectedBtn.classList.remove('selected');
-                    card.querySelector('.btn-refresco[data-refresco-id="1"]').classList.add('selected');
+            if (btn && input) {
+                let currentVal = parseInt(input.value);
+                if (btn.classList.contains('btn-cant-aumentar')) {
+                    if (currentVal < MAX_QUANTITY) {
+                         input.value = currentVal + 1;
+                    } else {
+                        showFloatingMessage(`Límite de ${MAX_QUANTITY} Milanesas alcanzado.`, 'warning');
+                    }
+                } else if (btn.classList.contains('btn-cant-disminuir') && currentVal > 1) {
+                    input.value = currentVal - 1;
                 }
+                updateTotalPrice(card);
             }
-            
-            if (card) {
+        });
+        
+        // Listener para la entrada directa de cantidad de MILANESA
+        card.querySelector('.input-cantidad-milanesa').addEventListener('input', () => {
+            updateTotalPrice(card);
+        });
+        
+        // Listener para los botones de AUMENTAR/DISMINUIR cantidad de REFRESCO
+        card.querySelector('.cantidad-control-refresco').addEventListener('click', (event) => {
+            const btn = event.target.closest('button');
+            const input = card.querySelector('.input-cantidad-refresco');
+            const selectedRefrescoBtn = card.querySelector('.btn-refresco.selected');
+            const refrescoId = parseInt(selectedRefrescoBtn.dataset.refrescoId);
+
+            // Solo permitir modificación si NO es "Sin Refresco"
+            if (btn && input && refrescoId !== 0) {
+                let currentVal = parseInt(input.value);
+                if (btn.classList.contains('btn-cant-aumentar')) {
+                    if (currentVal < MAX_QUANTITY) {
+                         input.value = currentVal + 1;
+                    } else {
+                        showFloatingMessage(`Límite de ${MAX_QUANTITY} Refrescos alcanzado.`, 'warning');
+                    }
+                } else if (btn.classList.contains('btn-cant-disminuir') && currentVal > 1) {
+                    input.value = currentVal - 1;
+                } else if (btn.classList.contains('btn-cant-disminuir') && currentVal === 1) {
+                    // Al bajar de 1, volvemos a "Sin Refresco" y ponemos la cantidad a 0
+                    const sinRefrescoBtn = card.querySelector('.btn-refresco[data-refresco-id="0"]');
+                    if(sinRefrescoBtn) {
+                        handleRefrescoSelection(card, sinRefrescoBtn);
+                    }
+                    return; // Ya se actualizó el precio en handleRefrescoSelection
+                }
+                updateTotalPrice(card);
+            }
+        });
+
+        // Listener para la entrada directa de cantidad de REFRESCO
+        card.querySelector('.input-cantidad-refresco').addEventListener('input', () => {
+            const inputRefresco = card.querySelector('.input-cantidad-refresco');
+            const selectedRefrescoBtn = card.querySelector('.btn-refresco.selected');
+            const refrescoId = parseInt(selectedRefrescoBtn.dataset.refrescoId);
+
+            // Si el valor cambia a 0, automáticamente seleccionar "Sin Refresco"
+            if (parseInt(inputRefresco.value) === 0 && refrescoId !== 0) {
+                 const sinRefrescoBtn = card.querySelector('.btn-refresco[data-refresco-id="0"]');
+                 if(sinRefrescoBtn) {
+                     handleRefrescoSelection(card, sinRefrescoBtn);
+                 }
+            } else {
                 updateTotalPrice(card);
             }
         });
     });
-
+    
     // ---------------------------------
-    // 4. LÓGICA DE AGREGAR/CANCELAR CARRITO (DELEGACIÓN)
+    // 3. LÓGICA DE AGREGAR/CANCELAR
     // ---------------------------------
+    // Usamos delegación de eventos para los botones de agregar/cancelar
     const productosContainer = document.querySelector('.productos-container');
     if (productosContainer) {
         productosContainer.addEventListener('click', (event) => {

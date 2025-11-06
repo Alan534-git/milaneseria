@@ -29,189 +29,208 @@
     box-shadow: 0 15px 30px var(--color-shadow); /* Sombra más pronunciada */
 }
 
-.producto-imagen {
-    /* CAMBIO: Dimensiones fijas para que sean consistentes */
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
+.producto-imagen-wrapper {
+    width: 100%;
+    max-height: 200px; /* Altura máxima para evitar imágenes gigantes */
+    overflow: hidden;
     border-radius: 8px;
-    margin-bottom: 15px;
-    border: 2px solid var(--color-border);
+    margin-bottom: 20px;
+    border: 1px solid var(--color-border);
 }
 
-.producto-nombre {
-    color: var(--color-text-primary);
-    font-size: 1.5rem;
-    font-weight: 700;
+.producto-imagen {
+    /* CAMBIO: Dimensiones fijas para que todas las imágenes se vean igual */
+    width: 100%;
+    height: 200px;
+    object-fit: cover; /* Recortar si es necesario para mantener la proporción */
+    display: block;
+}
+
+.producto-info {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-grow: 1; /* Para que la info ocupe el espacio restante */
+}
+
+.producto-info h2 {
+    color: var(--color-accent-secondary);
+    font-size: 1.6rem;
+    margin-top: 0;
     margin-bottom: 10px;
 }
 
 .precio-base {
+    font-size: 1.1rem;
     color: var(--color-text-secondary);
-    font-size: 1.1rem;
     font-weight: 500;
-    margin-bottom: 20px;
 }
 
-/* CAMBIO: Estilos para el selector de cantidad (ahora un contenedor) */
-.selectores-cantidad {
-    display: flex;
-    /* Apilarlos en columna */
-    flex-direction: column; 
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
+.precio-base span {
+    color: var(--color-accent-main);
+    font-weight: 700;
+}
+
+/* ---------------------------------- */
+/* CONTROLES DE CANTIDAD (MILANESA Y REFRESCO) */
+/* ---------------------------------- */
+.cantidad-control-group {
+    width: 100%;
     margin-bottom: 15px;
-    width: 100%; /* Ocupar todo el ancho para una mejor alineación */
 }
 
-/* Estilo para cada fila de selector (label + input) */
-.selector-individual {
-    display: flex;
-    justify-content: space-between; /* Alinea label e input */
-    align-items: center;
-    width: 80%; /* Un ancho razonable */
-    gap: 10px;
-    font-size: 1.1rem;
+.label-cantidad {
+    display: block;
+    margin-bottom: 8px;
     font-weight: 600;
     color: var(--color-text-primary);
 }
 
+.cantidad-control {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+.cantidad-control.disabled {
+    opacity: 0.6;
+    pointer-events: none; /* Deshabilita la interacción con el control completo */
+}
+
+.btn-cant {
+    background-color: var(--color-btn-default-bg);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: 30px;
+    height: 30px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-weight: bold;
+}
+
+.btn-cant:hover {
+    background-color: var(--color-btn-default-hover);
+}
 
 .input-cantidad {
-    width: 60px;
-    padding: 8px;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
+    width: 50px;
+    height: 30px;
+    padding: 0 5px;
     text-align: center;
-    font-size: 1.1rem;
-    font-weight: 600;
-    background-color: var(--color-bg-body);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background-color: var(--color-bg-container);
     color: var(--color-text-primary);
-    transition: border-color 0.3s, box-shadow 0.3s;
-    /* Permitir que el navegador muestre los controles numéricos */
-    -moz-appearance: textfield; 
+    font-weight: 600;
+    transition: border-color 0.2s;
 }
-.input-cantidad::-webkit-outer-spin-button,
-.input-cantidad::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
 
 .input-cantidad:focus {
     border-color: var(--color-accent-main);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(214, 69, 30, 0.2);
 }
 
-/* Contenedor de las opciones (Refresco y Cantidad) */
-.opciones-producto {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-}
+/* Ocultar flechas del input number en Chrome/Safari */
+/* input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+} */
 
-.opciones-refresco {
+
+/* ---------------------------------- */
+/* OPCIONES DE REFRESCO (BOTONES REDONDOS) */
+/* ---------------------------------- */
+.control-refresco {
     width: 100%;
     margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px dashed var(--color-border);
 }
 
-.opciones-refresco .titulo-opciones {
-    font-weight: 600;
-    color: var(--color-text-primary);
-    margin-bottom: 10px;
-    font-size: 1.05rem;
-}
-
-/* Contenedor de botones de refresco */
-.refresco-botones {
+.refresco-opciones {
     display: flex;
-    flex-wrap: wrap; /* Permitir que se ajusten a varias líneas si es necesario */
+    flex-wrap: wrap;
     justify-content: center;
-    gap: 8px; /* Espacio reducido entre botones */
+    gap: 10px;
+    margin-top: 10px;
 }
 
-/* Botón individual de refresco */
 .btn-refresco {
-    /* Estilos base */
     background-color: var(--color-bg-container);
     border: 2px solid var(--color-border);
-    color: var(--color-text-secondary);
-    border-radius: 8px;
-    padding: 5px;
-    width: 40px; /* Tamaño fijo */
-    height: 40px; /* Tamaño fijo */
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
     cursor: pointer;
-    transition: all 0.2s ease;
     position: relative;
-    /* Resetear estilos para el ícono de Font Awesome */
     display: flex;
-    align-items: center;
     justify-content: center;
-    font-size: 1.3em;
+    align-items: center;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-/* Imágenes dentro del botón de refresco */
+/* Iconos y Tooltips */
+.btn-refresco i, .btn-refresco img {
+    font-size: 1.2rem;
+    color: var(--color-text-secondary);
+}
+
 .btn-refresco img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 4px;
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    border-radius: 50%;
 }
 
-/* Estado seleccionado */
+.btn-refresco:hover {
+    border-color: var(--color-accent-hover);
+}
+
 .btn-refresco.selected {
-    border-color: var(--color-accent-main); /* Borde de acento para la selección */
-    box-shadow: 0 0 0 3px rgba(214, 69, 30, 0.3);
-    color: var(--color-accent-main); /* Color de ícono seleccionado */
+    border-color: var(--color-accent-main);
+    box-shadow: 0 0 0 3px var(--color-accent-main), 0 0 10px var(--color-accent-main);
 }
 
-/* Tooltip (información al pasar el mouse) */
+/* Tooltip */
 .tooltip-refresco {
+    visibility: hidden;
+    background-color: var(--color-text-primary);
+    color: white;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 10px;
     position: absolute;
-    bottom: calc(100% + 5px); /* Arriba del botón */
+    z-index: 1;
+    bottom: 120%; /* Posiciona el tooltip arriba del botón */
     left: 50%;
     transform: translateX(-50%);
-    background-color: var(--color-accent-secondary);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 6px;
-    z-index: 10;
-    visibility: hidden;
     opacity: 0;
-    transition: visibility 0.3s, opacity 0.3s, background-color 0.3s, color 0.3s;
+    transition: opacity 0.3s;
     white-space: nowrap;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 500;
 }
-
-/* CAMBIO: Tooltip en modo oscuro */
-body.dark-mode .tooltip-refresco {
-    background-color: var(--color-bg-body); /* Fondo oscuro */
-    color: var(--color-text-primary); /* Texto claro */
-}
-
 
 .btn-refresco:hover .tooltip-refresco {
     visibility: visible;
     opacity: 1;
 }
 
+/* ---------------------------------- */
+/* BOTONES DE AGREGAR/CANCELAR */
+/* ---------------------------------- */
 
-/* CAMBIO: Botón de acción genérico en la tarjeta (Agregar / Cancelar) */
 .btn-accion-card {
-    margin-top: auto; 
     width: 100%;
-    text-decoration: none;
-    padding: 12px 20px;
     border: none;
     border-radius: 8px;
-    font-weight: 700;
+    padding: 12px 20px;
     font-size: 1.1rem;
-    display: inline-flex;
+    font-weight: 600;
+    display: flex;
     justify-content: center;
     align-items: center;
     gap: 8px;
@@ -245,33 +264,37 @@ body.dark-mode .tooltip-refresco {
     box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.25);
 }
 
-
-.btn-accion-card:active {
-    transform: translateY(0);
-    box-shadow: none;
-}
-
-.btn-accion-card:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
+.btn-accion-card .total-price {
+    font-weight: 800;
+    margin-left: 2px;
 }
 
 
-/* Media Queries */
-@media (max-width: 768px) {
-    .productos-container {
-        /* Una columna en pantallas pequeñas */
-        grid-template-columns: 1fr; 
+/* ---------------------------------- */
+/* MEDIA QUERIES */
+/* ---------------------------------- */
+@media (max-width: 600px) {
+    .container {
+        padding: 10px;
     }
+
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .header-right {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+    }
+    
     .producto-card {
         padding: 20px;
     }
-    .producto-nombre {
-        font-size: 1.3rem;
-    }
-    .selector-individual {
-        width: 100%; /* Ocupar todo el ancho en móviles */
+
+    .refresco-opciones {
+        gap: 8px;
     }
 }

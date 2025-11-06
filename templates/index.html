@@ -23,59 +23,68 @@
                     <i class="fas fa-moon"></i>
                 </button>
                 <!-- Botón del Carrito -->
-                <a href="/carrito" class="btn-carrito" aria-label="Ver carrito">
+                <a href="{{ url_for('carrito') }}" class="btn-carrito" aria-label="Ir al carrito de compras">
                     <i class="fas fa-shopping-cart"></i>
-                    Carrito 
-                    {% if cart_count > 0 %}
-                        <span id="cart-count" class="cart-badge">{{ cart_count }}</span>
-                    {% else %}
-                        <span id="cart-count" class="cart-badge" style="display: none;">0</span>
-                    {% endif %}
+                    <!-- Contador del Carrito -->
+                   <span id="cart-count" class="cart-count {{ 'flex' if cart_count > 0 else 'hidden' }}">
+                    {{ cart_count }}
+                </span>
+
                 </a>
             </div>
         </header>
 
-        <h2>Nuestras Especialidades</h2>
-
+        <!-- Contenedor de Productos -->
         <div class="productos-container">
-            <!-- Bucle para mostrar los productos -->
             {% for p in productos %}
                 <div class="producto-card" data-product-id="{{ p.id }}">
-                    <img src="{{ url_for('static', filename='img/' + p.imagen) }}" alt="{{ p.nombre }}" class="producto-imagen" onerror="this.onerror=null; this.src='https://placehold.co/100x100/1e3a47/ffffff?text=M';">
-                    
-                    <h3 class="producto-nombre">{{ p.nombre }}</h3>
-                    <p class="precio-base">Precio Base: $<span data-base-price="{{ p.precio }}">{{ "%.2f"|format(p.precio) }}</span></p>
+                    <!-- Imagen -->
+                    <div class="producto-imagen-wrapper">
+                         <!-- Fallback: El src usa una URL ficticia de webp. Si falla, usa placehold.co con colores que coincidan con el tema. -->
+                        <img class="producto-imagen" 
+                             src="{{ url_for('static', filename='img/' + p.imagen) }}" 
+                             alt="{{ p.nombre }}"
+                             onerror="this.onerror=null; this.src='https://placehold.co/300x200/d6451e/ffffff?text={{ p.nombre | urlencode }}';"
+                        >
+                    </div>
 
-                    <div class="opciones-producto">
-                        <!-- CAMBIO: Selectores de Cantidad (Milanesa y Refresco) -->
-                        <div class="selectores-cantidad">
-                            <div class="selector-individual">
-                                <label for="cantidad-milanesa-{{ p.id }}">Milanesas:</label>
-                                <input type="number" id="cantidad-milanesa-{{ p.id }}" class="input-cantidad input-cantidad-milanesa" value="1" min="1" max="99">
-                            </div>
-                            <div class="selector-individual">
-                                <label for="cantidad-refresco-{{ p.id }}">Refrescos:</label>
-                                <input type="number" id="cantidad-refresco-{{ p.id }}" class="input-cantidad input-cantidad-refresco" value="1" min="0" max="99">
+                    <!-- Información y Controles -->
+                    <div class="producto-info">
+                        <h2>{{ p.nombre }}</h2>
+                        <!-- Precio Base de la Milanesa -->
+                        <p class="precio-base">Precio por Milanesa: $<span data-base-price="{{ p.precio }}">{{ "%.2f"|format(p.precio) }}</span></p>
+                        
+                        <hr>
+                        
+                        <!-- Control de Cantidad de Milanesas -->
+                        <div class="cantidad-control-group">
+                            <label for="cant-milanesa-{{ p.id }}" class="label-cantidad">Cantidad de Milanesas (1-20):</label>
+                            <div class="cantidad-control cantidad-control-milanesa">
+                                <button class="btn-cant btn-cant-disminuir" aria-label="Disminuir cantidad de milanesa">-</button>
+                                <input type="number" id="cant-milanesa-{{ p.id }}" class="input-cantidad input-cantidad-milanesa" value="1" min="1" max="20" required>
+                                <button class="btn-cant btn-cant-aumentar" aria-label="Aumentar cantidad de milanesa">+</button>
                             </div>
                         </div>
-                        
-                        <!-- Contenedor de Refrescos -->
-                        <div class="opciones-refresco">
-                            <p class="titulo-opciones">Elige tu Refresco:</p>
-                            <div class="refresco-botones">
-                                <!-- Opción Sin Refresco -->
+
+                        <hr>
+
+                        <!-- Control de Refrescos -->
+                        <div class="control-refresco">
+                            <label class="label-cantidad">Selección de Refresco:</label>
+                            <div class="refresco-opciones">
+                                <!-- Opción Sin Refresco (ID 0) -->
                                 <button class="btn-refresco" data-refresco-id="0" data-price="0.00" aria-label="Sin Refresco">
                                     <i class="fas fa-ban"></i>
                                     <span class="tooltip-refresco">Sin Refresco: $0.00</span>
                                 </button>
                                 <!-- Opción Coca-Cola -->
                                 <button class="btn-refresco" data-refresco-id="1" data-price="1.50" aria-label="Refresco Coca-Cola">
-                                    <img src="{{ url_for('static', filename='img/coca_cola.webp') }}" alt="Coca-Cola" onerror="this.onerror=null; this.src='https://placehold.co/20x20/dc2626/ffffff?text=C';">
+                                    <img src="{{ url_for('static', filename='img/coca_cola.webp') }}" alt="Coca-Cola" onerror="this.onerror=null; this.src='https://placehold.co/20x20/ef4444/ffffff?text=C';">
                                     <span class="tooltip-refresco">Coca-Cola: $1.50</span>
                                 </button>
                                 <!-- Opción Pepsi -->
                                 <button class="btn-refresco" data-refresco-id="2" data-price="1.75" aria-label="Refresco Pepsi">
-                                    <img src="{{ url_for('static', filename='img/pepsi.webp') }}" alt="Pepsi" onerror="this.onerror=null; this.src='https://placehold.co/20x20/2563eb/ffffff?text=P';">
+                                    <img src="{{ url_for('static', filename='img/pepsi.webp') }}" alt="Pepsi" onerror="this.onerror=null; this.src='https://placehold.co/20x20/3b82f6/ffffff?text=P';">
                                     <span class="tooltip-refresco">Pepsi: $1.75</span>
                                 </button>
                                 <!-- Opción Sprite -->
@@ -100,9 +109,21 @@
                                 </button>
                             </div>
                         </div>
+                        
+                        <!-- Control de Cantidad de Refrescos -->
+                        <div class="cantidad-control-group">
+                            <label for="cant-refresco-{{ p.id }}" class="label-cantidad">Cantidad de Refrescos (0-20):</label>
+                            <div class="cantidad-control cantidad-control-refresco disabled">
+                                <button class="btn-cant btn-cant-disminuir" aria-label="Disminuir cantidad de refresco">-</button>
+                                <input type="number" id="cant-refresco-{{ p.id }}" class="input-cantidad input-cantidad-refresco" value="0" min="0" max="20" required disabled>
+                                <button class="btn-cant btn-cant-aumentar" aria-label="Aumentar cantidad de refresco">+</button>
+                            </div>
+                        </div>
+                        
+                        <hr>
 
                         <!-- Botón de Agregar al Carrito - CAMBIO: Texto simplificado -->
-                        <button class="btn-accion-card btn-agregar" data-product-id="{{ p.id }}" data-refresco-id="0" data-cantidad-milanesa="1" data-cantidad-refresco="1">
+                        <button class="btn-accion-card btn-agregar" data-product-id="{{ p.id }}" data-refresco-id="0" data-cantidad-milanesa="1" data-cantidad-refresco="0">
                             ➕ Agregar al carrito ($<span class="total-price">{{ "%.2f"|format(p.precio) }}</span>)
                         </button>
                     </div>
@@ -110,6 +131,13 @@
             {% endfor %}
         </div>
     </div>
+
+    <!-- ===== INICIO: DIÁLOGO FLOTANTE DE MENSAJES (Advertencias, Errores) ===== -->
+    <!-- Se reutiliza y estiliza en index.css -->
+    <div id="floating-message-dialog" class="floating-message-dialog">
+        <!-- El mensaje se inserta aquí dinámicamente -->
+    </div>
+    <!-- ===== FIN: DIÁLOGO FLOTANTE DE MENSAJES ===== -->
 
     <!-- Script principal de la lógica de la tienda y tema -->
     <script src="{{ url_for('static', filename='js/index.js') }}"></script>
