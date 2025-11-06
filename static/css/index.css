@@ -53,18 +53,30 @@
     margin-bottom: 20px;
 }
 
-/* Estilos para el selector de cantidad - NUEVO */
-.selector-cantidad {
+/* CAMBIO: Estilos para el selector de cantidad (ahora un contenedor) */
+.selectores-cantidad {
     display: flex;
+    /* Apilarlos en columna */
+    flex-direction: column; 
     align-items: center;
     justify-content: center;
     gap: 10px;
     margin-bottom: 15px;
+    width: 100%; /* Ocupar todo el ancho para una mejor alineación */
+}
+
+/* Estilo para cada fila de selector (label + input) */
+.selector-individual {
+    display: flex;
+    justify-content: space-between; /* Alinea label e input */
+    align-items: center;
+    width: 80%; /* Un ancho razonable */
+    gap: 10px;
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--color-text-primary);
-    width: 100%; /* Ocupar todo el ancho para una mejor alineación */
 }
+
 
 .input-cantidad {
     width: 60px;
@@ -77,7 +89,15 @@
     background-color: var(--color-bg-body);
     color: var(--color-text-primary);
     transition: border-color 0.3s, box-shadow 0.3s;
+    /* Permitir que el navegador muestre los controles numéricos */
+    -moz-appearance: textfield; 
 }
+.input-cantidad::-webkit-outer-spin-button,
+.input-cantidad::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 
 .input-cantidad:focus {
     border-color: var(--color-accent-main);
@@ -163,10 +183,17 @@
     z-index: 10;
     visibility: hidden;
     opacity: 0;
-    transition: visibility 0.3s, opacity 0.3s;
+    transition: visibility 0.3s, opacity 0.3s, background-color 0.3s, color 0.3s;
     white-space: nowrap;
     font-size: 0.85rem;
 }
+
+/* CAMBIO: Tooltip en modo oscuro */
+body.dark-mode .tooltip-refresco {
+    background-color: var(--color-bg-body); /* Fondo oscuro */
+    color: var(--color-text-primary); /* Texto claro */
+}
+
 
 .btn-refresco:hover .tooltip-refresco {
     visibility: visible;
@@ -174,16 +201,12 @@
 }
 
 
-/* Botón principal de Agregar al Carrito */
-.btn-agregar {
-    /* Lo ponemos al final de la tarjeta */
+/* CAMBIO: Botón de acción genérico en la tarjeta (Agregar / Cancelar) */
+.btn-accion-card {
     margin-top: auto; 
-    /* Asegura que el botón hacia el final de la tarjeta */
     width: 100%;
     text-decoration: none;
     padding: 12px 20px;
-    background-color: var(--color-accent-main);
-    color: white;
     border: none;
     border-radius: 8px;
     font-weight: 700;
@@ -191,13 +214,16 @@
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    gap: 5px; /* Reduje el gap */
+    gap: 8px;
     transition: background-color 0.3s, transform 0.1s, box-shadow 0.3s;
-    box-shadow: 0 4px 10px -2px rgba(214, 69, 30, 0.4);
+    cursor: pointer;
 }
 
-.btn-agregar .cantidad-display, .btn-agregar .total-price {
-    font-weight: 800;
+/* Estado "Agregar" (naranja) */
+.btn-agregar {
+    background-color: var(--color-accent-main);
+    color: white;
+    box-shadow: 0 4px 10px -2px rgba(214, 69, 30, 0.4);
 }
 
 .btn-agregar:hover {
@@ -206,12 +232,26 @@
     box-shadow: 0 15px 25px -5px rgba(214, 69, 30, 0.45);
 }
 
-.btn-agregar:active {
-    transform: translateY(0);
-    box-shadow: 0 4px 10px -2px rgba(214, 69, 30, 0.4);
+/* NUEVO: Estado "Cancelar" (gris) */
+.btn-cancelar {
+    background-color: var(--color-btn-default-bg); /* Gris neutro */
+    color: white;
+    box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.2);
 }
 
-.btn-agregar:disabled {
+.btn-cancelar:hover {
+    background-color: var(--color-btn-default-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.25);
+}
+
+
+.btn-accion-card:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.btn-accion-card:disabled {
     background-color: #ccc;
     cursor: not-allowed;
     box-shadow: none;
@@ -230,5 +270,8 @@
     }
     .producto-nombre {
         font-size: 1.3rem;
+    }
+    .selector-individual {
+        width: 100%; /* Ocupar todo el ancho en móviles */
     }
 }

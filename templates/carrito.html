@@ -33,17 +33,21 @@
                 <ul class="carrito-items">
                     {% for item in carrito %}
                         <li class="carrito-item">
-                            <!-- CAMBIO 1: Corregida la ruta de la imagen de la milanesa -->
+                            <!-- Corregida la ruta de la imagen de la milanesa -->
                             <img src="{{ url_for('static', filename='img/' + item.imagen) }}" 
                                  alt="{{ item.nombre }}" 
                                  class="carrito-item-img"
                                  onerror="this.onerror=null; this.src='https://placehold.co/60x60/1e3a47/ffffff?text=M';">
                             
                             <div class="carrito-item-details">
-                                <h4>{{ item.nombre }}</h4>
-                                <!-- CAMBIO 2: Añadida la imagen del refresco (si existe) -->
+                                <!-- CAMBIO: Mostrar cantidad de milanesas -->
+                                <h4>{{ item.nombre }} (x{{ item.cantidad_milanesa }})</h4>
+                                
                                 <p>
-                                    Refresco: {{ item.refresco_nombre }}
+                                    <!-- CAMBIO: Mostrar cantidad de refrescos -->
+                                    Refresco: {{ item.refresco_nombre }} 
+                                    {% if item.cantidad_refresco > 0 %}(x{{ item.cantidad_refresco }}){% endif %}
+                                    
                                     {% if item.imagen_refresco %}
                                         <img src="{{ url_for('static', filename='img/' + item.imagen_refresco) }}" 
                                              alt="{{ item.refresco_nombre }}" 

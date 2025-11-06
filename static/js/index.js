@@ -8,27 +8,46 @@ const refrescoData = {
     '6': 0.75  // Manaos (nuevo)
 };
 
-// Función para calcular el precio total basado en el precio base, refresco y cantidad
+/**
+ * CAMBIO: Función para calcular el precio total.
+ * Ahora usa la cantidad de milanesas y la cantidad de refrescos por separado.
+ */
 function updateTotalPrice(card) {
     const basePrice = parseFloat(card.querySelector('.precio-base span').dataset.basePrice);
     const selectedRefrescoBtn = card.querySelector('.btn-refresco.selected');
     const refrescoPrice = parseFloat(selectedRefrescoBtn.dataset.price);
-    const cantidad = parseInt(card.querySelector('.input-cantidad').value);
-
-    const unitPrice = basePrice + refrescoPrice;
-    const totalPrice = unitPrice * cantidad;
-
-    // Actualiza el texto del botón "Agregar"
-    const btnAgregar = card.querySelector('.btn-agregar');
-    const priceSpan = btnAgregar.querySelector('.total-price');
-    const cantidadSpan = btnAgregar.querySelector('.cantidad-display');
     
-    // Almacena los IDs y la cantidad en los dataset del botón para el envío
-    btnAgregar.dataset.refrescoId = selectedRefrescoBtn.dataset.refrescoId;
-    btnAgregar.dataset.cantidad = cantidad;
+    // Leer las dos cantidades
+    const cantMilanesa = parseInt(card.querySelector('.input-cantidad-milanesa').value);
+    const cantRefresco = parseInt(card.querySelector('.input-cantidad-refresco').value);
 
-    priceSpan.textContent = totalPrice.toFixed(2);
-    cantidadSpan.textContent = cantidad;
+    // Validar que las cantidades sean números válidos
+    const validCantMilanesa = (isNaN(cantMilanesa) || cantMilanesa < 1) ? 1 : cantMilanesa;
+    const validCantRefresco = (isNaN(cantRefresco) || cantRefresco < 0) ? 0 : cantRefresco;
+
+    // Si el refresco seleccionado es "Sin Refresco", forzar la cantidad de refresco a 0
+    const finalCantRefresco = selectedRefrescoBtn.dataset.refrescoId === '0' ? 0 : validCantRefresco;
+    
+    // Si la cantidad de refresco es 0, el precio del refresco es 0
+    const finalRefrescoPrice = finalCantRefresco === 0 ? 0.00 : refrescoPrice;
+
+    // Calcular el precio total
+    const totalPrice = (basePrice * validCantMilanesa) + (finalRefrescoPrice * finalCantRefresco);
+
+    // Actualiza el botón (solo si es 'btn-agregar', si es 'btn-cancelar' no toca el texto)
+    const btnAccion = card.querySelector('.btn-accion-card');
+    
+    if (btnAccion.classList.contains('btn-agregar')) {
+        const priceSpan = btnAccion.querySelector('.total-price');
+        
+        // Almacena los IDs y las cantidades en los dataset del botón para el envío
+        btnAccion.dataset.refrescoId = selectedRefrescoBtn.dataset.refrescoId;
+        btnAccion.dataset.cantidadMilanesa = validCantMilanesa;
+        btnAccion.dataset.cantidadRefresco = finalCantRefresco;
+
+        // Actualiza el precio en el texto del botón
+        priceSpan.textContent = totalPrice.toFixed(2);
+    }
 }
 
 // Función para actualizar el contador del carrito en el header
@@ -38,6 +57,142 @@ function updateCartCount(newCount) {
         cartCountSpan.textContent = newCount;
         // Muestra u oculta el badge
         cartCountSpan.style.display = newCount > 0 ? 'inline-block' : 'none';
+    }
+}
+
+// Función para mostrar un feedback temporal en el botón
+function setButtonFeedback(button, text, isError = false) {
+    const originalHTML = button.innerHTML;
+    const originalClasses = button.className;
+    
+    button.disabled = true;
+    button.innerHTML = text;
+    if (isError) {
+        button.classList.add('btn-cancelar'); // Reusamos el estilo gris/rojo
+    }
+
+    setTimeout(() => {
+        button.disabled = false;
+        button.innerHTML = originalHTML;
+        button.className = originalClasses;
+        
+        // Si falló, debemos recalcular el precio para restaurar el botón
+        if (isError) {
+            const card = button.closest('.producto-card');
+            if (card) {
+                updateTotalPrice(card);
+            }
+        }
+    }, 1000);
+}
+
+// CAMBIO: Nueva función para manejar el clic en "Agregar"
+async function handleAgregar(button) {
+    const card = button.closest('.producto-card');
+    const productId = button.dataset.productId;
+    const refrescoId = button.dataset.refrescoId;
+    const cantidadMilanesa = button.dataset.cantidadMilanesa;
+    const cantidadRefresco = button.dataset.cantidadRefresco;
+
+    button.disabled = true;
+    button.innerHTML = 'Agregando...';
+
+    // Crear el objeto de datos a enviar
+    const postData = {
+        product_id: productId,
+        refresco_id: refrescoId,
+        cantidad_milanesa: cantidadMilanesa,
+        cantidad_refresco: cantidadRefresco
+    };
+
+    try {
+        const response = await fetch('/agregar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        });
+
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.message || 'Error al agregar.');
+        }
+
+        const data = await response.json();
+        
+        // Éxito:
+        updateCartCount(data.cart_count);
+
+        // Transformar en botón de "Cancelar"
+        button.innerHTML = '✅ Agregado (Cancelar)';
+        button.classList.remove('btn-agregar');
+        button.classList.add('btn-cancelar');
+        button.dataset.itemKey = data.item_key; // Guardamos el ID del item creado
+        button.disabled = false;
+
+    } catch (error) {
+        console.error('Hubo un problema con la operación de fetch:', error);
+        // Mostrar error y restaurar
+        button.disabled = false;
+        button.innerHTML = '❌ Error';
+        setTimeout(() => {
+             if (card) {
+                // Restaura el botón al estado original
+                button.innerHTML = `➕ Agregar al carrito ($<span class="total-price">0.00</span>)`;
+                updateTotalPrice(card);
+             }
+        }, 1000);
+    }
+}
+
+// CAMBIO: Nueva función para manejar el clic en "Cancelar"
+async function handleCancelar(button) {
+    const card = button.closest('.producto-card');
+    const itemKey = button.dataset.itemKey;
+
+    if (!itemKey) return;
+
+    button.disabled = true;
+    button.innerHTML = 'Cancelando...';
+
+    try {
+        // Usamos la nueva API para eliminar
+        const response = await fetch('/api/eliminar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ item_key: itemKey }),
+        });
+
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.message || 'Error al cancelar.');
+        }
+
+        const data = await response.json();
+
+        // Éxito:
+        updateCartCount(data.cart_count);
+
+        // Restaurar el botón a "Agregar"
+        button.innerHTML = `➕ Agregar al carrito ($<span class="total-price">0.00</span>)`; // Texto base
+        button.classList.remove('btn-cancelar');
+        button.classList.add('btn-agregar');
+        delete button.dataset.itemKey; // Limpiamos el ID
+        button.disabled = false;
+        
+        // Recalculamos el precio para el botón
+        if (card) {
+            updateTotalPrice(card);
+        }
+
+    } catch (error) {
+        console.error('Hubo un problema con la operación de fetch:', error);
+        // Mostrar error y restaurar
+        button.disabled = false;
+        button.innerHTML = '❌ Error'; // Mantenemos el estado de "Cancelar" si falla
+        setTimeout(() => {
+            button.innerHTML = '✅ Agregado (Cancelar)';
+            button.disabled = false;
+        }, 1000);
     }
 }
 
@@ -52,7 +207,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (storedTheme) {
         document.body.classList.toggle('dark-mode', storedTheme === 'dark');
     } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        // Establecer modo oscuro por defecto si el sistema lo prefiere
         document.body.classList.add('dark-mode');
     }
 
@@ -71,14 +225,19 @@ document.addEventListener('DOMContentLoaded', function() {
         container.addEventListener('click', (event) => {
             const btn = event.target.closest('.btn-refresco');
             if (btn) {
-                // Quitar 'selected' de todos los hermanos
                 container.querySelectorAll('.btn-refresco').forEach(b => b.classList.remove('selected'));
-                // Agregar 'selected' al botón clickeado
                 btn.classList.add('selected');
-
-                // Recalcular el precio total
+                
                 const card = btn.closest('.producto-card');
                 if (card) {
+                    const inputRefresco = card.querySelector('.input-cantidad-refresco');
+                    // Si eligen "Sin Refresco", pone la cantidad de refresco a 0
+                    if (btn.dataset.refrescoId === '0') {
+                        inputRefresco.value = 0;
+                    } else if (inputRefresco.value === '0') {
+                        // Si eligen un refresco y la cantidad era 0, la pone a 1
+                        inputRefresco.value = 1;
+                    }
                     updateTotalPrice(card);
                 }
             }
@@ -88,23 +247,26 @@ document.addEventListener('DOMContentLoaded', function() {
     // ---------------------------------
     // 3. LÓGICA DE CAMBIO DE CANTIDAD
     // ---------------------------------
+    // CAMBIO: Ahora escucha a los dos inputs
     document.querySelectorAll('.input-cantidad').forEach(input => {
         input.addEventListener('change', (event) => {
-            let value = parseInt(input.value);
-            
-            // Validar que la cantidad sea al menos 1
-            if (isNaN(value) || value < 1) {
-                value = 1;
-                input.value = 1;
-            }
-            // Limitar a un máximo razonable (ej. 99)
-            if (value > 99) {
-                value = 99;
-                input.value = 99;
-            }
-
-            // Recalcular el precio total
             const card = input.closest('.producto-card');
+            
+            // Si cambian la cantidad de refresco a 0, selecciona "Sin Refresco"
+            if (input.classList.contains('input-cantidad-refresco') && input.value === '0') {
+                card.querySelectorAll('.btn-refresco').forEach(b => b.classList.remove('selected'));
+                card.querySelector('.btn-refresco[data-refresco-id="0"]').classList.add('selected');
+            }
+            // Si cambian la cantidad de refresco a > 0 y estaba "Sin Refresco"
+            else if (input.classList.contains('input-cantidad-refresco') && input.value > '0') {
+                const selectedBtn = card.querySelector('.btn-refresco.selected');
+                if (selectedBtn && selectedBtn.dataset.refrescoId === '0') {
+                    // Selecciona el primer refresco real (ej. Coca-Cola)
+                    selectedBtn.classList.remove('selected');
+                    card.querySelector('.btn-refresco[data-refresco-id="1"]').classList.add('selected');
+                }
+            }
+            
             if (card) {
                 updateTotalPrice(card);
             }
@@ -112,95 +274,45 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // ---------------------------------
-    // 4. LÓGICA DE AGREGAR AL CARRITO (POST/JSON)
+    // 4. LÓGICA DE AGREGAR/CANCELAR CARRITO (DELEGACIÓN)
     // ---------------------------------
-    document.querySelectorAll('.btn-agregar').forEach(button => {
-        button.addEventListener('click', (event) => {
-            event.preventDefault();
-            const productId = button.dataset.productId;
-            const refrescoId = button.dataset.refrescoId;
-            const cantidad = button.dataset.cantidad; // Obtenida de updateTotalPrice
+    const productosContainer = document.querySelector('.productos-container');
+    if (productosContainer) {
+        productosContainer.addEventListener('click', (event) => {
+            const btnAgregar = event.target.closest('.btn-agregar');
+            if (btnAgregar) {
+                event.preventDefault();
+                handleAgregar(btnAgregar);
+                return;
+            }
 
-            // Deshabilitar botón para prevenir doble click
-            button.disabled = true;
-            button.textContent = 'Agregando...';
-
-            // Crear el objeto de datos a enviar
-            const postData = {
-                product_id: productId,
-                refresco_id: refrescoId,
-                cantidad: cantidad 
-            };
-            
-            // Usar fetch para enviar datos como JSON (POST)
-            fetch('/agregar', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(postData),
-            })
-            .then(response => {
-                // Si la respuesta no es 200 OK, lanzar un error para ir al catch
-                if (!response.ok) {
-                    return response.json().then(err => { throw new Error(err.message || 'Error al agregar al carrito.'); });
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Éxito:
-                console.log('Respuesta del servidor:', data);
-                
-                // 1. Actualiza el contador del carrito
-                if (data.cart_count !== undefined) {
-                    updateCartCount(data.cart_count);
-                }
-
-                // 2. Opcional: Mostrar una confirmación visual rápida (ej. animación)
-                button.textContent = '✅ Agregado';
-                setTimeout(() => {
-                    const card = button.closest('.producto-card');
-                    if (card) {
-                        updateTotalPrice(card); // Restaura el texto y precio
-                    }
-                    button.disabled = false;
-                    button.textContent = `➕ Agregar ${cantidad} al carrito ($${button.querySelector('.total-price').textContent})`;
-                }, 800);
-
-            })
-            .catch(error => {
-                // Fallo:
-                console.error('Hubo un problema con la operación de fetch:', error);
-                // Restaurar el botón
-                button.disabled = false;
-                button.textContent = '❌ Error';
-                setTimeout(() => {
-                     const card = button.closest('.producto-card');
-                    if (card) {
-                        updateTotalPrice(card);
-                    }
-                }, 800);
-            });
+            const btnCancel = event.target.closest('.btn-cancelar');
+            if (btnCancel) {
+                event.preventDefault();
+                handleCancelar(btnCancel);
+                return;
+            }
         });
-    });
+    }
+
 
     // ---------------------------------
     // 5. LÓGICA DE INICIALIZACIÓN
     // ---------------------------------
     document.querySelectorAll('.producto-card').forEach(card => {
-        const btnAgregar = card.querySelector('.btn-agregar');
-        const inputCantidad = card.querySelector('.input-cantidad');
-
-        if (btnAgregar && inputCantidad) {
-            // Selecciona el botón "Sin Refresco" por defecto
-            const sinRefrescoBtn = card.querySelector('.btn-refresco[data-refresco-id="0"]');
-            if (sinRefrescoBtn) {
-                sinRefrescoBtn.classList.add('selected');
-                btnAgregar.dataset.refrescoId = '0'; // Asegura que el ID de refresco por defecto esté en el botón
-            }
-            
-            // Inicializar el precio y cantidad en el botón "Agregar al Carrito"
-            updateTotalPrice(card);
+        // Selecciona el botón "Sin Refresco" por defecto
+        const sinRefrescoBtn = card.querySelector('.btn-refresco[data-refresco-id="0"]');
+        if (sinRefrescoBtn) {
+            sinRefrescoBtn.classList.add('selected');
         }
+        
+        // Ponemos la cantidad de refresco a 0 por defecto si "Sin Refresco" está seleccionado
+        const inputRefresco = card.querySelector('.input-cantidad-refresco');
+        if (sinRefrescoBtn.classList.contains('selected')) {
+            inputRefresco.value = 0;
+        }
+
+        // Inicializar el precio y cantidad en el botón "Agregar al Carrito"
+        updateTotalPrice(card);
     });
 });

@@ -47,15 +47,21 @@
                     <p class="precio-base">Precio Base: $<span data-base-price="{{ p.precio }}">{{ "%.2f"|format(p.precio) }}</span></p>
 
                     <div class="opciones-producto">
-                        <!-- Selector de Cantidad - NUEVO CAMBIO -->
-                        <div class="selector-cantidad">
-                            <label for="cantidad-{{ p.id }}">Cantidad:</label>
-                            <input type="number" id="cantidad-{{ p.id }}" class="input-cantidad" value="1" min="1" max="99" data-product-id="{{ p.id }}">
+                        <!-- CAMBIO: Selectores de Cantidad (Milanesa y Refresco) -->
+                        <div class="selectores-cantidad">
+                            <div class="selector-individual">
+                                <label for="cantidad-milanesa-{{ p.id }}">Milanesas:</label>
+                                <input type="number" id="cantidad-milanesa-{{ p.id }}" class="input-cantidad input-cantidad-milanesa" value="1" min="1" max="99">
+                            </div>
+                            <div class="selector-individual">
+                                <label for="cantidad-refresco-{{ p.id }}">Refrescos:</label>
+                                <input type="number" id="cantidad-refresco-{{ p.id }}" class="input-cantidad input-cantidad-refresco" value="1" min="0" max="99">
+                            </div>
                         </div>
                         
                         <!-- Contenedor de Refrescos -->
                         <div class="opciones-refresco">
-                            <p class="titulo-opciones">Elige tu Refresco (Opcional):</p>
+                            <p class="titulo-opciones">Elige tu Refresco:</p>
                             <div class="refresco-botones">
                                 <!-- Opción Sin Refresco -->
                                 <button class="btn-refresco" data-refresco-id="0" data-price="0.00" aria-label="Sin Refresco">
@@ -95,9 +101,9 @@
                             </div>
                         </div>
 
-                        <!-- Botón de Agregar al Carrito - Ahora un botón y no un <a> -->
-                        <button class="btn-agregar" data-product-id="{{ p.id }}" data-refresco-id="0" data-cantidad="1">
-                            ➕ Agregar <span class="cantidad-display">1</span> al carrito ($<span class="total-price">{{ "%.2f"|format(p.precio) }}</span>)
+                        <!-- Botón de Agregar al Carrito - CAMBIO: Texto simplificado -->
+                        <button class="btn-accion-card btn-agregar" data-product-id="{{ p.id }}" data-refresco-id="0" data-cantidad-milanesa="1" data-cantidad-refresco="1">
+                            ➕ Agregar al carrito ($<span class="total-price">{{ "%.2f"|format(p.precio) }}</span>)
                         </button>
                     </div>
                 </div>
