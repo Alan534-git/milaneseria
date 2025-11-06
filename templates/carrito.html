@@ -33,10 +33,24 @@
                 <ul class="carrito-items">
                     {% for item in carrito %}
                         <li class="carrito-item">
-                            <img src="{{ item.imagen }}" alt="{{ item.nombre }}" class="carrito-item-img">
+                            <!-- CAMBIO 1: Corregida la ruta de la imagen de la milanesa -->
+                            <img src="{{ url_for('static', filename='img/' + item.imagen) }}" 
+                                 alt="{{ item.nombre }}" 
+                                 class="carrito-item-img"
+                                 onerror="this.onerror=null; this.src='https://placehold.co/60x60/1e3a47/ffffff?text=M';">
+                            
                             <div class="carrito-item-details">
                                 <h4>{{ item.nombre }}</h4>
-                                <p>Refresco: {{ item.refresco_nombre }}</p>
+                                <!-- CAMBIO 2: Añadida la imagen del refresco (si existe) -->
+                                <p>
+                                    Refresco: {{ item.refresco_nombre }}
+                                    {% if item.imagen_refresco %}
+                                        <img src="{{ url_for('static', filename='img/' + item.imagen_refresco) }}" 
+                                             alt="{{ item.refresco_nombre }}" 
+                                             class="refresco-icon-carrito"
+                                             onerror="this.style.display='none'">
+                                    {% endif %}
+                                </p>
                             </div>
                             <span class="carrito-item-price">${{ "%.2f"|format(item.precio_total) }}</span>
                             <a href="/eliminar/{{ item.item_key }}" class="btn-eliminar" aria-label="Eliminar ítem">

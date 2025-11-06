@@ -28,6 +28,17 @@ refresco_precios = {
     '6': 0.75   # Manaos
 }
 
+# --- NUEVO: Diccionario para las imágenes de los refrescos ---
+refresco_imagenes = {
+    '0': None, # Sin Refresco
+    '1': "coca_cola.webp",
+    '2': "pepsi.webp",
+    '3': "sprite.webp",
+    '4': "fanta.webp",
+    '5': "7up.webp",
+    '6': "manaos.webp"
+}
+
 def obtener_producto(producto_id):
     """Busca un producto por ID."""
     try:
@@ -113,6 +124,10 @@ def agregar_producto():
         '3': "Sprite", '4': "Fanta", '5': "7Up", '6': "Manaos"
     }
     nombre_refresco = nombre_refresco_map.get(refresco_id, "Refresco Desconocido")
+    
+    # --- CAMBIO: Obtener la imagen del refresco ---
+    imagen_refresco = refresco_imagenes.get(refresco_id, None)
+
 
     # Obtener o inicializar el carrito
     carrito = session.get("carrito", [])
@@ -126,6 +141,7 @@ def agregar_producto():
             "precio_base": producto["precio"], # Precio solo de la milanesa
             "refresco_id": refresco_id,
             "nombre_refresco": nombre_refresco,
+            "imagen_refresco": imagen_refresco, # <-- CAMBIO: Se añade la imagen del refresco
             "precio_refresco": precio_refresco,
             "precio_total": precio_unitario_total,
             "imagen": producto["imagen"],
@@ -154,28 +170,22 @@ def vaciar():
     return redirect(url_for("carrito"))
 
 # --- RUTA DE API PARA PROCESAR PAGO ---
-@app.route("/api/pagar", methods=["POST"])
+# --- MODIFICADO: /api/procesar_pago Y ACEPTA JSON ---
+@app.route("/api/procesar_pago", methods=["POST"])
 def procesar_pago():
-    """Simula el procesamiento del pago."""
-    # En una aplicación real, aquí se procesarían los datos de la tarjeta.
-    
-    # Validar que los datos POST (simulados por el JSON) no estén vacíos
-    data = request.get_json()
-    if not data or not all(key in data for key in ['nombre', 'tarjeta', 'expiracion', 'cvv']):
-        # Simular fallo si faltan datos
-        return jsonify({'success': False, 'message': 'Faltan datos de pago requeridos.'}), 400
-    
-    # Simulamos un pago exitoso vaciando el carrito
+    """
+    Simula el procesamiento del pago (API).
+    Ahora no requiere datos de tarjeta, solo simula el éxito si el carrito no está vacío.
+    """
     if "carrito" in session and session["carrito"]:
-        # NOTA: La llamada a session.pop("carrito", None) elimina el carrito
-        # El JavaScript en carrito.js lo vacía tras el éxito
-        
-        # Mantengo la lógica de vaciado aquí ya que es la API la que 'confirma' la transacción
+        # El pago es exitoso, vaciamos el carrito
         session.pop("carrito", None)
         session.modified = True
         return jsonify({'success': True, 'message': 'Pago exitoso'})
-        
+    
+    # Si el carrito ya estaba vacío (ej. doble click)
     return jsonify({'success': False, 'message': 'El carrito está vacío'}), 400
+
 
 # --- RUTA PARA ELIMINAR ÍTEM DEL CARRITO ---
 # Ahora acepta la item_key (string) en lugar del ID (int)
