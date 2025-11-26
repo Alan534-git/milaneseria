@@ -71,7 +71,6 @@ body {
 /* ---------------------------------- */
 
 /* Definición de la propiedad 'appearance' para compatibilidad (no estándar) */
-/* El usuario solicitó definir esta propiedad. Se incluye con prefijos por compatibilidad con Gecko/WebKit. */
 .compat-appearance {
     -webkit-appearance: none;
     -moz-appearance: none; /* Gecko */
@@ -79,7 +78,6 @@ body {
 }
 
 /* Estilo para los inputs de tipo number (ocultar flechas en navegadores) */
-/* Se utiliza la clase .compat-appearance para aplicar el estilo */
 input[type="number"].input-cantidad {
     -webkit-appearance: textfield; /* Mostrar en Safari/Chrome */
     -moz-appearance: textfield;   /* Mostrar en Firefox */
@@ -104,6 +102,13 @@ input[type="number"].input-cantidad {
     border-radius: 50%;
     padding: 2px;
     line-height: 1;
+}
+
+/* CONTENEDOR DERECHO DEL HEADER (Para alinear botones) */
+.header-right {
+    display: flex;
+    align-items: center; /* Alineación vertical perfecta */
+    gap: 15px; /* Espacio consistente entre el switch y el carrito */
 }
 
 /* Estilo para el botón de cambio de tema */
@@ -163,7 +168,7 @@ body.dark-mode #theme-toggle .fa-moon {
     align-items: center;
     color: var(--color-text-primary);
     text-decoration: none;
-    margin-left: 15px;
+    /* margin-left eliminado porque usamos gap en .header-right */
     transition: background-color 0.3s, border-color 0.3s, transform 0.1s;
     box-shadow: 0 2px 5px var(--color-shadow);
 }

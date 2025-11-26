@@ -134,14 +134,6 @@
     outline: none;
 }
 
-/* Ocultar flechas del input number en Chrome/Safari */
-/* input[type=number]::-webkit-inner-spin-button, 
-input[type=number]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-} */
-
-
 /* ---------------------------------- */
 /* OPCIONES DE REFRESCO (BOTONES REDONDOS) */
 /* ---------------------------------- */
@@ -198,7 +190,10 @@ input[type=number]::-webkit-outer-spin-button {
 .tooltip-refresco {
     visibility: hidden;
     background-color: var(--color-text-primary);
-    color: white;
+    /* CAMBIO: Usamos el color de fondo del contenedor para el texto.
+       En modo claro: fondo oscuro, texto blanco.
+       En modo oscuro: fondo claro, texto oscuro. */
+    color: var(--color-bg-container);
     text-align: center;
     border-radius: 6px;
     padding: 5px 10px;
@@ -211,7 +206,7 @@ input[type=number]::-webkit-outer-spin-button {
     transition: opacity 0.3s;
     white-space: nowrap;
     font-size: 0.8rem;
-    font-weight: 500;
+    font-weight: 700; /* Texto un poco más grueso para legibilidad */
 }
 
 .btn-refresco:hover .tooltip-refresco {
@@ -284,9 +279,9 @@ input[type=number]::-webkit-outer-spin-button {
         gap: 15px;
     }
 
+    /* En móvil, .header-right debe alinearse a la derecha */
     .header-right {
         width: 100%;
-        display: flex;
         justify-content: flex-end;
     }
     
