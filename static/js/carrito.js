@@ -103,12 +103,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
 
-            // Llamada API para procesar el pago (simulado)
-            fetch('/api/procesar_pago', {
+            // CORRECCIÓN: Usar la ruta '/api/checkout' que es la que existe en app.py
+            fetch('/api/checkout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                }
+                },
+                body: JSON.stringify({}) // Enviamos un JSON vacío para evitar error 400 por malformación
             })
             .then(response => {
                 // Verificar si la respuesta fue un 4xx o 5xx
