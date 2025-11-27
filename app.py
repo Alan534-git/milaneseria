@@ -150,26 +150,29 @@ def api_agregar():
     refresco_nombre = info_ref['nombre']
     refresco_imagen = info_ref['imagen']
 
-    # --- CORRECCIÓN CRÍTICA: Asegurar que los nombres de las claves coincidan con carrito.html ---
+    # --- CORRECCIÓN CLAVE: Usar el ID del cliente si existe, para permitir la cancelación ---
+    client_key = data.get('item_key')
+    final_key = client_key if client_key else str(uuid.uuid4())
+
     item = {
-        'item_key': str(uuid.uuid4()), # Clave única
+        'item_key': final_key, # Usamos la clave que sincroniza UI y Backend
         'id': producto['id'],
         'nombre': producto['nombre'],
-        'imagen': producto['imagen'], # <--- FALTABA ESTO (Causante del error)
+        'imagen': producto['imagen'], 
         
-        # Cantidades (ajustadas a lo que pide carrito.html)
+        # Cantidades
         'cantidad_milanesa': cant_milanesa, 
         'cantidad_refresco': cant_refresco,
         
         # Info Refresco
         'refresco_id': refresco_id,
-        'refresco_nombre': refresco_nombre, # <--- FALTABA ESTO para carrito.html
-        'imagen_refresco': refresco_imagen, # <--- FALTABA ESTO para carrito.html
+        'refresco_nombre': refresco_nombre,
+        'imagen_refresco': refresco_imagen,
         
         # Precios
         'precio_milanesa': milanesa_precio,
         'precio_refresco': refresco_precios.get(refresco_id_str, 0.00),
-        'precio_total': precio_total # Usamos precio_total para ser consistente con el html
+        'precio_total': precio_total
     }
 
     # 3. Agregar al carrito
