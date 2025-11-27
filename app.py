@@ -31,6 +31,17 @@ refresco_precios = {
     '6': 0.75   # Manaos (nuevo)
 }
 
+# Diccionario para mapear IDs de refresco a nombres e imágenes
+refresco_info = {
+    '0': {'nombre': 'Sin Refresco', 'imagen': None},
+    '1': {'nombre': 'Coca-Cola', 'imagen': 'coca_cola.webp'},
+    '2': {'nombre': 'Pepsi', 'imagen': 'pepsi.webp'},
+    '3': {'nombre': 'Sprite', 'imagen': 'sprite.webp'},
+    '4': {'nombre': 'Fanta', 'imagen': 'fanta.webp'},
+    '5': {'nombre': '7Up', 'imagen': '7up.webp'},
+    '6': {'nombre': 'Manaos', 'imagen': 'manaos.webp'}
+}
+
 # ----------------------------------
 # Funciones de utilidad
 # ----------------------------------
@@ -78,7 +89,7 @@ def index():
 def carrito():
     """Ruta de la página del carrito de compras."""
     carrito_items = session.get("carrito", [])
-    total = sum(item['subtotal'] for item in carrito_items)
+    total = sum(item['precio_total'] for item in carrito_items) # Corregido: usa precio_total
     return render_template("carrito.html", carrito=carrito_items, total=total)
 
 @app.route("/vaciar")
@@ -96,7 +107,8 @@ def api_agregar():
     """
     data = request.get_json()
     product_id = data.get('product_id')
-    refresco_id = int(data.get('refresco_id', 0))
+    refresco_id_str = str(data.get('refresco_id', 0))
+    refresco_id = int(refresco_id_str)
     
     # Intenta parsear las cantidades, usando 1 y 0 como fallback
     try:
@@ -131,24 +143,33 @@ def api_agregar():
     # 2. Calcular precio y construir el ítem
     milanesa_precio = producto['precio']
     
-    subtotal = calculate_item_price(milanesa_precio, cant_milanesa, refresco_id, cant_refresco)
+    precio_total = calculate_item_price(milanesa_precio, cant_milanesa, refresco_id, cant_refresco)
 
-    refresco_nombre = next((nombre for rid, nombre in [('1', 'Coca-Cola'), ('2', 'Pepsi'), ('3', 'Sprite'), ('4', 'Fanta'), ('5', '7Up'), ('6', 'Manaos'), ('0', 'Sin Refresco')] if rid == str(refresco_id)), 'Error')
+    # Obtener info del refresco
+    info_ref = refresco_info.get(refresco_id_str, {'nombre': 'Desconocido', 'imagen': None})
+    refresco_nombre = info_ref['nombre']
+    refresco_imagen = info_ref['imagen']
 
-    # Si selecciona "Sin Refresco", la descripción del refresco es vacía.
-    refresco_desc = f" ({cant_refresco}x {refresco_nombre})" if refresco_id != 0 else ""
-
+    # --- CORRECCIÓN CRÍTICA: Asegurar que los nombres de las claves coincidan con carrito.html ---
     item = {
-        'item_key': str(uuid.uuid4()), # Clave única para identificar la línea de pedido
+        'item_key': str(uuid.uuid4()), # Clave única
         'id': producto['id'],
         'nombre': producto['nombre'],
-        'cant_milanesa': cant_milanesa,
+        'imagen': producto['imagen'], # <--- FALTABA ESTO (Causante del error)
+        
+        # Cantidades (ajustadas a lo que pide carrito.html)
+        'cantidad_milanesa': cant_milanesa, 
+        'cantidad_refresco': cant_refresco,
+        
+        # Info Refresco
         'refresco_id': refresco_id,
-        'cant_refresco': cant_refresco,
+        'refresco_nombre': refresco_nombre, # <--- FALTABA ESTO para carrito.html
+        'imagen_refresco': refresco_imagen, # <--- FALTABA ESTO para carrito.html
+        
+        # Precios
         'precio_milanesa': milanesa_precio,
-        'precio_refresco': refresco_precios.get(str(refresco_id), 0.00),
-        'subtotal': subtotal,
-        'descripcion_refresco': refresco_desc # Para mostrar en el carrito.
+        'precio_refresco': refresco_precios.get(refresco_id_str, 0.00),
+        'precio_total': precio_total # Usamos precio_total para ser consistente con el html
     }
 
     # 3. Agregar al carrito
@@ -172,8 +193,7 @@ def api_checkout():
 
     # Simulación de validación de pago/datos
     data = request.get_json()
-    # Se podría validar data.get('tarjeta'), data.get('cvc'), etc. aquí.
-
+    
     # 1. Procesa la orden (simulado)
     # Aquí iría la lógica real de procesamiento de pago y guardado de orden.
 
@@ -217,14 +237,9 @@ def api_eliminar():
         cart_count = get_cart_count(nuevo_carrito)
         return jsonify({'success': True, 'message': 'Ítem eliminado', 'cart_count': cart_count})
     else:
-        # Esto puede ocurrir si el usuario intenta cancelar un ítem que ya no está en el carrito
         cart_count = get_cart_count(carrito)
         return jsonify({'success': False, 'message': 'Ítem no encontrado', 'cart_count': cart_count}), 404
 
 if __name__ == "__main__":
-    # La variable __app_id se inyecta en el entorno de Canvas.
-    # Si no existe, se usa 'default'.
     app_id = os.environ.get('__app_id', 'default-app-id')
-    
-    # Esto es solo para que Flask corra, pero el puerto es manejado por el entorno de Canvas.
     app.run(debug=True, host='0.0.0.0', port=5000)
