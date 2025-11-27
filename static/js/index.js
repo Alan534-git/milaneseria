@@ -63,7 +63,11 @@ function updateTotalPrice(card) {
     // Actualizar el botón de "Agregar al Carrito"
     const btnAgregar = card.querySelector('.btn-agregar');
     if (btnAgregar) {
-        btnAgregar.querySelector('.total-price').textContent = total.toFixed(2);
+        // Buscamos el span del precio, si existe
+        const priceSpan = btnAgregar.querySelector('.total-price');
+        if (priceSpan) {
+            priceSpan.textContent = total.toFixed(2);
+        }
         btnAgregar.dataset.cantidadMilanesa = cantMilanesa;
         btnAgregar.dataset.cantidadRefresco = cantRefresco;
     }
@@ -149,6 +153,11 @@ async function handleAgregar(btnAgregar) {
         return;
     }
 
+    // --- CORRECCIÓN AQUÍ ---
+    // Guardamos el precio actual ANTES de cambiar el innerHTML del botón
+    const priceSpan = btnAgregar.querySelector('.total-price');
+    const currentPrice = priceSpan ? priceSpan.textContent : '0.00';
+    
     // Deshabilitar el botón temporalmente
     const originalText = btnAgregar.innerHTML;
     btnAgregar.disabled = true;
@@ -181,10 +190,14 @@ async function handleAgregar(btnAgregar) {
             // Transicionar el botón a "Cancelar"
             btnAgregar.classList.remove('btn-agregar');
             btnAgregar.classList.add('btn-cancelar');
-            btnAgregar.innerHTML = `❌ Cancelar Último Ítem ($${btnAgregar.querySelector('.total-price').textContent})`;
             
-            // Guardar la clave del ítem temporalmente para la cancelación
+            // --- USO DEL PRECIO GUARDADO ---
+            // Usamos 'currentPrice' en lugar de intentar leer el DOM modificado
+            btnAgregar.innerHTML = `❌ Cancelar Último Ítem ($${currentPrice})`;
+            
+            // Guardar la clave del ítem y el precio para restaurarlo si se cancela
             btnAgregar.dataset.itemKey = itemKey;
+            btnAgregar.dataset.lastPrice = currentPrice;
             
             // Revertir a "Agregar" después de 5 segundos
             setTimeout(() => {
@@ -194,6 +207,7 @@ async function handleAgregar(btnAgregar) {
                     btnAgregar.classList.add('btn-agregar');
                     btnAgregar.innerHTML = originalText;
                     delete btnAgregar.dataset.itemKey;
+                    delete btnAgregar.dataset.lastPrice;
                 }
                 btnAgregar.disabled = false;
             }, 5000); 
@@ -207,10 +221,15 @@ async function handleAgregar(btnAgregar) {
     } catch (error) {
         console.error('Error de red:', error);
         showFloatingMessage('🚨 Error de conexión al servidor.', 'error');
+        btnAgregar.innerHTML = originalText; // Restaurar texto si hay error de red
     } finally {
         // Si no se revirtió a "Agregar" automáticamente, lo reactivamos.
+        // Nota: Si fue éxito, queremos dejarlo activado pero con clase 'btn-cancelar'
+        // Si fue error, ya se restauró arriba.
         if (btnAgregar.classList.contains('btn-agregar')) {
              btnAgregar.disabled = false;
+        } else {
+             btnAgregar.disabled = false; // Habilitar el botón de cancelar
         }
     }
 }
@@ -221,6 +240,7 @@ async function handleAgregar(btnAgregar) {
  */
 async function handleCancelar(btnCancel) {
     const itemKey = btnCancel.dataset.itemKey;
+    const lastPrice = btnCancel.dataset.lastPrice || '0.00'; // Recuperamos el precio guardado
 
     if (!itemKey) {
         showFloatingMessage('Error: No hay ítem a cancelar.', 'error');
@@ -249,14 +269,14 @@ async function handleCancelar(btnCancel) {
             updateCartIcon(data.cart_count);
 
             // Revertir el botón a "Agregar"
-            const originalPriceSpan = btnCancel.querySelector('.total-price');
-            const originalPrice = originalPriceSpan ? originalPriceSpan.textContent : '0.00';
-            
             btnCancel.classList.remove('btn-cancelar');
             btnCancel.classList.add('btn-agregar');
-            btnCancel.innerHTML = `➕ Agregar al carrito ($<span class="total-price">${originalPrice}</span>)`;
+            
+            // Reconstruimos el HTML del botón con el precio recuperado
+            btnCancel.innerHTML = `➕ Agregar al carrito ($<span class="total-price">${lastPrice}</span>)`;
             
             delete btnCancel.dataset.itemKey;
+            delete btnCancel.dataset.lastPrice;
 
         } else {
             // Error de validación o del servidor
@@ -267,6 +287,7 @@ async function handleCancelar(btnCancel) {
     } catch (error) {
         console.error('Error de red:', error);
         showFloatingMessage('🚨 Error de conexión al servidor.', 'error');
+        btnCancel.innerHTML = originalText;
     } finally {
         btnCancel.disabled = false;
     }
@@ -280,7 +301,10 @@ function updateCartIcon(count) {
     const cartCountElement = document.getElementById('cart-count');
     if (cartCountElement) {
         cartCountElement.textContent = count;
-        cartCountElement.style.display = count > 0 ? 'flex' : 'none';
+        cartCountElement.classList.toggle('hidden', count === 0);
+        cartCountElement.classList.toggle('flex', count > 0);
+        // Compatibilidad con la versión anterior de clases en HTML template
+        cartCountElement.style.display = count > 0 ? 'flex' : 'none'; 
     }
 }
 
@@ -430,7 +454,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Ponemos la cantidad de refresco a 0 por defecto si "Sin Refresco" está seleccionado
         const inputRefresco = card.querySelector('.input-cantidad-refresco');
-        if (sinRefrescoBtn.classList.contains('selected')) {
+        if (sinRefrescoBtn && sinRefrescoBtn.classList.contains('selected') && inputRefresco) {
             inputRefresco.value = 0;
         }
 
